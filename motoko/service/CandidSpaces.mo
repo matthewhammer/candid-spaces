@@ -33,8 +33,8 @@ shared ({caller = initPrincipal}) actor class CandidSpaces () {
   public type View = Types.View.View;
 
   public type CandidValue = Types.Candid.Value.Value;
-  public type SpacePath = Types.Space.Path;
-  public type SpacePaths = Types.Space.Paths;
+  public type SpacePath = Types.Space.Path.Path;
+  public type SpacePaths = Types.Space.Paths.Paths;
   public type ViewGathering = Types.View.Gathering;
 
   /// log the given event kind, with a unique ID and current time
@@ -156,13 +156,40 @@ shared ({caller = initPrincipal}) actor class CandidSpaces () {
   };
 
   /// Put candid data into the space identified by the path.
-  public func put(user : ?UserId, path : SpacePath, vals : [CandidValue]) : async ?() {
-    loop { assert false }
+  public shared(msg) func put(user_ : UserId, path_ : SpacePath, values_ : [CandidValue]) : async ?() {
+    do ? {
+      accessCheck(msg.caller, #update, #user user_)!;
+      // to do --
+      // access control for spaces,
+      //   based on whitelists for viewers and updaters of private spaces,
+      //   and just updater whitelists of public spaces.
+      //accessCheck(msg.caller, #update, #space path_)!;
+      logEvent(#put({user=user_; path=path_; values=values_}));
+      let space = switch (state.spaces.get(path_)) {
+        case null {
+               // space does not exist; create it now.
+               let space = {
+                 createUser = user_;
+                 createTime = timeNow_();
+                 puts = State.Space.Puts.empty();
+               };
+               state.spaces.put(path_, space);
+               space
+        };
+        case (?space) { space };
+      };
+      space.puts.add(
+        {
+          time = timeNow_();
+          user = user_;
+          values = values_
+        });
+    }
   };
 
   /// Create a (temporary) view of a given path, with a given time to life (ttl).
   public func createView(
-    user : ?UserId,
+    user : UserId,
     path : SpacePaths,
     gathering : ViewGathering,
     ttl : ?Nat)

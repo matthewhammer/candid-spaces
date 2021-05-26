@@ -43,11 +43,16 @@ public type ProfileInfo = {
  userName: Text;
 };
 
+
 public module Space {
-  public type Path = [Text];
-  public type Paths = {
-    #all;
-    #within : [(Text, Paths)]
+  public module Path {
+    public type Path = [Text];
+  };
+  public module Paths {
+    public type Paths = {
+      #all;
+      #within : [(Text, Paths)]
+    };
   };
   /* to do --
   public type Sort = {
