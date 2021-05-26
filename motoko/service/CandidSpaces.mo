@@ -230,7 +230,7 @@ shared ({caller = initPrincipal}) actor class CandidSpaces () {
       let id = do {
         let id = state.viewCount;
         state.viewCount += 1;
-        "#" # Int.toText(id)
+        "view-" # Int.toText(id)
       };
       state.views.put(
         id,
