@@ -38,12 +38,6 @@ public type ActionTarget = {
   #pubView
 };
 
-/// profile information provided by service to front end views -- Pic is separate query
-public type ProfileInfo = {
- userName: Text;
-};
-
-/// User name and allowance balance.
 public type ProfileInfo = {
  userName: Text;
 };

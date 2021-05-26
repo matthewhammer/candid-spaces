@@ -68,7 +68,7 @@ module {
     let equal = (Text.equal, Text.equal);
     let hash = (Text.hash, Text.hash);
     let st : State = {
-      access = Access.Access({ admin = init.admin ; uploaded = uploaded_ });
+      access = Access.Access({ admin = init.admin });
       profiles = TrieMap.TrieMap<Types.UserId, Profile>(Text.equal, Text.hash);
       eventLog = SeqObj.Seq<Event.Event>(Event.equal, null);
       var eventCount = 0;

@@ -26,6 +26,9 @@ shared ({caller = initPrincipal}) actor class CandidSpaces () {
 
   var state = State.empty({ admin = initPrincipal });
 
+  public type UserId = Types.UserId;
+  public type ProfileInfo = Types.ProfileInfo;
+
   /// log the given event kind, with a unique ID and current time
   func logEvent(ek : State.Event.EventKind) {
     state.eventLog.add({
@@ -64,12 +67,12 @@ shared ({caller = initPrincipal}) actor class CandidSpaces () {
     state.access.check(timeNow_(), caller, action, target)
   };
 
-  public shared(msg) func createProfile(userName : Text, pic : ?ProfilePic) : async ?ProfileInfoPlus {
+  public shared(msg) func createProfile(userName : Text) : async ?ProfileInfo {
     do ? {
       accessCheck(msg.caller, #create, #user userName)!;
-      createProfile_(userName, ?msg.caller, pic)!;
+      createProfile_(userName, ?msg.caller)!;
       // return the full profile info
-      getProfilePlus_(?userName, userName)! // self-view
+      getProfileInfo_(?userName, userName)! // self-view
     }
   };
 
@@ -122,7 +125,7 @@ shared ({caller = initPrincipal}) actor class CandidSpaces () {
     }
   };
 
-  func getProfileInfo_(target : UserId) : ?ProfileInfo {
+  func getProfileInfo_(_viewer : ?UserId, target : UserId) : ?ProfileInfo {
     do ? {
       let profile = state.profiles.get(target)!;
       {
@@ -131,10 +134,16 @@ shared ({caller = initPrincipal}) actor class CandidSpaces () {
     }
   };
 
-  public query(msg) func getProfileInfo(userId : UserId) : async ?ProfileInfo {
+  public query(msg) func getProfileInfo(viewer : ?UserId, userId : UserId) : async ?ProfileInfo {
     do ? {
+      switch viewer {
+        case null { };
+        case (?v) {
+               accessCheck(msg.caller, #update, #user v)!;
+             };
+      };
       accessCheck(msg.caller, #view, #user userId)!;
-      getProfileInfo_(userId)!
+      getProfileInfo_(viewer, userId)!
     }
   };
 

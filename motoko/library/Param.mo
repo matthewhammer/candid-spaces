@@ -12,7 +12,7 @@ module {
     #script; 
     // IC determines time.
     #ic;
-  } 
+  };
   public let timeMode : TimeMode = #ic;
 
   /// Recent past duration of time.

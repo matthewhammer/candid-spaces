@@ -1,3 +1,4 @@
+
 import Text "mo:base/Text";
 import Array "mo:base/Array";
 import Principal "mo:base/Principal";
@@ -38,7 +39,6 @@ module {
   public class Access(
     init : {
     admin : Principal;
-    uploaded : RelObj.RelObj<Types.UserId, Types.VideoId>
   } )
   {
 
@@ -157,16 +157,6 @@ module {
                                  if (userPrincipal.isMember(i, caller_)) {
                                    ?()
                                  } else { null }
-                               };
-                          case (#video v) {
-                                 let users = init.uploaded.get1(v);
-                                 switch (users.size()) {
-                                 case 1 { if (userPrincipal.isMember(users[0], caller_)) {
-                                            ?()
-                                          } else { null } };
-                                 // invariant: exactly only one video uploader per video.
-                                 case _ { assert false; null };
-                                 }
                                };
                         }
                       };
