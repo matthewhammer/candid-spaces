@@ -41,6 +41,7 @@ module {
     public type EventKind = {
       #reset : Types.TimeMode;
       #createProfile : CreateProfile;
+      #createView : View.CreateEvent;
       #put : Put;
     };
 
@@ -52,6 +53,21 @@ module {
 
     public func equal(x:Event, y:Event) : Bool { x == y };
     public type Log = SeqObj.Seq<Event>;
+  };
+
+  /// A view is an immutable representation of a gathering of paths' data.
+  public module View {
+    public type CreateEvent = {
+      createUser : Types.UserId;
+      createTime : Int;
+      paths : Types.Space.Paths.Paths;
+      gathering : Types.View.Gathering;
+      ttl : ?Nat;
+    };
+    public type View = {
+      createEvent : CreateEvent;
+      spaces : [Space.Space];
+    };
   };
 
   public module Space {
@@ -97,6 +113,10 @@ module {
 
     /// all spaces.
     spaces : Map<Path, Space.Space>;
+
+    // all views.
+    views : Map<Types.ViewId, View.View>;
+    var viewCount : Nat;
   };
 
   /// User profile.
@@ -114,6 +134,8 @@ module {
       eventLog = SeqObj.Seq<Event.Event>(Event.equal, null);
       var eventCount = 0;
       spaces = TrieMap.TrieMap<Path, Space.Space>(Path.equal, Path.hash);
+      views = TrieMap.TrieMap<Types.ViewId, View.View>(Text.equal, Text.hash);
+      var viewCount = 0;
     };
     st
   };

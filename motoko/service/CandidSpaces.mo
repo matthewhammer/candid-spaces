@@ -30,6 +30,7 @@ shared ({caller = initPrincipal}) actor class CandidSpaces () {
   public type ProfileInfo = Types.ProfileInfo;
 
   public type ViewId = Types.ViewId;
+  public type ViewPos = Types.View.Position;
   public type View = Types.View.View;
 
   public type CandidValue = Types.Candid.Value.Value;
@@ -187,21 +188,79 @@ shared ({caller = initPrincipal}) actor class CandidSpaces () {
     }
   };
 
-  /// Create a (temporary) view of a given path, with a given time to life (ttl).
+  public type CreateViewResponse = {
+    viewId : ViewId;
+    putCount : Nat;
+  };
+
+  /// A view is an immutable representation of a gathering of paths' data.
+  ///
+  /// Create a (temporary) view of the given paths,
+  /// associated with the given user,
+  /// gathered in the given way,
+  /// with a given time to life (ttl).
+  ///
+  /// Views are inexpensive to create and are immutable once created;
+  /// to "update a view", re-create it with the same parameters, later.
+  ///
   public func createView(
-    user : UserId,
-    path : SpacePaths,
-    gathering : ViewGathering,
-    ttl : ?Nat)
-    : async ?ViewId
+    user_ : UserId,
+    paths_ : SpacePaths,
+    gathering_ : ViewGathering,
+    ttl_ : ?Nat)
+    : async ?CreateViewResponse
   {
+    do ? {
+      switch gathering_ {
+        case (#sequence) { };
+        case _ { assert false ; /* to do -- handle other gatherings. */ }       };
+      let spaces_ = Buffer.Buffer<State.Space.Space>(0);
+      for (path in paths_.vals()) {
+        spaces_.add(state.spaces.get(path)!)
+      };
+      let createEvent_ =
+        {
+          createUser = user_;
+          createTime = timeNow_();
+          paths = paths_;
+          gathering = gathering_ ;
+          ttl = ttl_
+        };
+      logEvent(#createView(createEvent_));
+      let id = do {
+        let id = state.viewCount;
+        state.viewCount += 1;
+        "#" # Int.toText(id)
+      };
+      state.views.put(
+        id,
+        {
+          createEvent = createEvent_;
+          spaces = spaces_.toArray() // to do -- get immutable reps
+        });
+      { viewId = id;
+        putCount = 666; // to do -- count size of immutable reps
+      }
+    }
+  };
+
+  /// Get a full view of gathered puts.
+  /// May fail to complete if the view is too large;
+  /// For large views, use getSubView multiple times, with tuning.
+  public query(msg) func getFullView(
+    viewer : ?UserId,
+    viewId : ViewId) : async ?View {
     loop { assert false }
   };
 
-  public query(msg) func getView(viewer : ?UserId, view : ViewId) : async ?View {
+  /// Get a sub-view of gathered puts.
+  /// Positions are in terms of total gathered puts.
+  public query(msg) func getSubView(
+    viewer : ?UserId,
+    viewId : ViewId,
+    startPos : ViewPos,
+    endPos : ViewPos) : async ?View {
     loop { assert false }
   };
-
-
 
 }

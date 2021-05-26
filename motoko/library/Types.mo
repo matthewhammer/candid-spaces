@@ -49,10 +49,7 @@ public module Space {
     public type Path = [Text];
   };
   public module Paths {
-    public type Paths = {
-      #all;
-      #within : [(Text, Paths)]
-    };
+    public type Paths = [Path.Path];
   };
   /* to do --
   public type Sort = {
@@ -92,7 +89,9 @@ public module Candid {
 };
 
 public module View {
-  public type ChunkId = Text;
+  /// Positions are in terms of total gathered puts.
+  public type Position = Nat;
+
   public type Timestamp = Int;
 
   public type Gathering = {
@@ -101,38 +100,17 @@ public module View {
     #sequence ;
   };
 
-  public type ValueWithTime = {
-    value : Candid.Value.Value;
-    time : Timestamp;
+  public type PutValues = {
+    time : Int;
+    user : UserId;
+    path : Space.Path.Path;
+    values : [Candid.Value.Value];
   };
 
-  public type ValueWithTimes = {
-    value : Candid.Value.Value;
-    times : [Timestamp];
-  };
-
-  public type SetChunk =
-    { subSet : [ValueWithTime] };
-
-  public type MultiSetChunk =
-    { subSet : [ValueWithTimes] };
-
-  public type SequenceChunk =
-    { offset : Nat;
-      subSequence : [ValueWithTime] };
-
-  public type ChunkData = {
-    #set : SetChunk;
-    #multiSet : MultiSetChunk;
-    #sequence : SequenceChunk;
-  };
-  public type Chunk = {
-    id : ChunkId;
-    data : ChunkData;
-  };
   public type View = {
-    chunk : Chunk;
-    next : ?ChunkId;
+    startPos : Position;
+    endPos : Position;
+    putValues : [PutValues];
   };
 };
 
