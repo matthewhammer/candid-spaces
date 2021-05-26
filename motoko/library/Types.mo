@@ -4,6 +4,7 @@ module {
 public type Timestamp = Int; // See mo:base/Time and Time.now()
 
 public type UserId = Text; // chosen by createUser
+public type ViewId = Text; // chosen by createView
 
 /// Role for a caller into the service API.
 /// Common case is #user.
@@ -40,6 +41,94 @@ public type ActionTarget = {
 
 public type ProfileInfo = {
  userName: Text;
+};
+
+public module Space {
+  public type Path = [Text];
+  public type Paths = {
+    #all;
+    #within : [(Text, Paths)]
+  };
+  /* to do --
+  public type Sort = {
+    #set
+    #multiset
+    #sequence
+  }; */
+};
+
+public module Candid {
+  public module Value {
+    public type Field = {
+      name : Text;
+      value : Value
+    };
+    public type Record = {
+      fields : [ Field ];
+    };
+   /* to do --
+   public type Type = ...
+   */
+    public type Value = {
+      #opt : Value;
+      #vec : [ Value ];
+      #record : Record;
+      #variant : Field;
+      #principal : Principal;
+      #none;
+      #nil; // wanted #null
+      #int : Int;
+      #nat : Nat;
+      #bool : Bool;
+      #text : Text;
+      #number : Text;
+    };
+  }
+};
+
+public module View {
+  public type ChunkId = Text;
+  public type Timestamp = Int;
+
+  public type Gathering = {
+    #set ;
+    #multiset ;
+    #sequence ;
+  };
+
+  public type ValueWithTime = {
+    value : Candid.Value.Value;
+    time : Timestamp;
+  };
+
+  public type ValueWithTimes = {
+    value : Candid.Value.Value;
+    times : [Timestamp];
+  };
+
+  public type SetChunk =
+    { subSet : [ValueWithTime] };
+
+  public type MultiSetChunk =
+    { subSet : [ValueWithTimes] };
+
+  public type SequenceChunk =
+    { offset : Nat;
+      subSequence : [ValueWithTime] };
+
+  public type ChunkData = {
+    #set : SetChunk;
+    #multiSet : MultiSetChunk;
+    #sequence : SequenceChunk;
+  };
+  public type Chunk = {
+    id : ChunkId;
+    data : ChunkData;
+  };
+  public type View = {
+    chunk : Chunk;
+    next : ?ChunkId;
+  };
 };
 
 /// For test scripts, the script controls how time advances, and when.

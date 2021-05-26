@@ -29,6 +29,14 @@ shared ({caller = initPrincipal}) actor class CandidSpaces () {
   public type UserId = Types.UserId;
   public type ProfileInfo = Types.ProfileInfo;
 
+  public type ViewId = Types.ViewId;
+  public type View = Types.View.View;
+
+  public type CandidValue = Types.Candid.Value.Value;
+  public type SpacePath = Types.Space.Path;
+  public type SpacePaths = Types.Space.Paths;
+  public type ViewGathering = Types.View.Gathering;
+
   /// log the given event kind, with a unique ID and current time
   func logEvent(ek : State.Event.EventKind) {
     state.eventLog.add({
@@ -146,6 +154,27 @@ shared ({caller = initPrincipal}) actor class CandidSpaces () {
       getProfileInfo_(viewer, userId)!
     }
   };
+
+  /// Put candid data into the space identified by the path.
+  public func put(user : ?UserId, path : SpacePath, vals : [CandidValue]) : async ?() {
+    loop { assert false }
+  };
+
+  /// Create a (temporary) view of a given path, with a given time to life (ttl).
+  public func createView(
+    user : ?UserId,
+    path : SpacePaths,
+    gathering : ViewGathering,
+    ttl : ?Nat)
+    : async ?ViewId
+  {
+    loop { assert false }
+  };
+
+  public query(msg) func getView(viewer : ?UserId, view : ViewId) : async ?View {
+    loop { assert false }
+  };
+
 
 
 }
