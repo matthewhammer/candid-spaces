@@ -1,3 +1,27 @@
+import Access "../library/Access";
+import Array "mo:base/Array";
+import Hash "mo:base/Hash";
+import Base "../library/Base";
+import Buffer "mo:base/Buffer";
+import Debug "mo:base/Debug";
+import Demo "../library/Demo";
+import HashMap "mo:base/HashMap";
+import Int "mo:base/Int";
+import Iter "mo:base/Iter";
+import List "mo:base/List";
+import Nat "mo:base/Nat";
+import Option "mo:base/Option";
+import P "mo:base/Prelude";
+import Param "../library/Param";
+import Prelude "mo:base/Prelude";
+import Principal "mo:base/Principal";
+import Rel "../library/Rel";
+import RelObj "../library/RelObj";
+import State "../library/State";
+import Text "mo:base/Text";
+import Time "mo:base/Time";
+import TrieMap "mo:base/TrieMap";
+import Types "../library/Types";
 
 shared ({caller = initPrincipal}) actor class CandidSpaces () {
 
