@@ -4,7 +4,6 @@ import Hash "mo:base/Hash";
 import Base "../library/Base";
 import Buffer "mo:base/Buffer";
 import Debug "mo:base/Debug";
-import Demo "../library/Demo";
 import HashMap "mo:base/HashMap";
 import Int "mo:base/Int";
 import Iter "mo:base/Iter";
