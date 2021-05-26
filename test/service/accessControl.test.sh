@@ -10,12 +10,12 @@ assert _ != (null : opt null);
 
 identity Bob;
 
-call S.getProfileInfo("alice"); // fail: no profile for bob yet.
+call S.getProfileInfo(null, "alice"); // fail: no profile for bob yet.
 assert _ == (null : opt null);
 
 call S.createProfile("bob"); // ok.
 assert _ != (null : opt null);
 
-call S.getProfileInfo("alice"); // ok
+call S.getProfileInfo(null, "alice"); // ok
 assert _ != (null : opt null);
 
