@@ -33,20 +33,27 @@ module {
     public type CreateProfile = {
       userName : Text;
     };
+    public type CreateView = {
+      createUser : Types.UserId;
+      createTime : Int;
+      targets : Types.View.Target.Targets;
+      gathering : Types.View.Gathering;
+      ttl : ?Nat;
+    };
     public type Put = {
       user : Types.UserId;
       path : Path;
-      values : [Types.Candid.Value.Value];
+      value : Types.Candid.Value.Value;
     };
     public type EventKind = {
       #reset : Types.TimeMode;
       #createProfile : CreateProfile;
-      #createView : View.CreateEvent;
+      #createView : CreateView;
       #put : Put;
     };
 
     public type Event = {
-      id : Nat; // unique ID, to avoid using time as one (not always unique)
+      id : Nat; // unique ID, to avoid using time as one (not always unique); need not be sequential.
       time : Int; // using mo:base/Time and Time.now() : Int
       kind : EventKind;
     };
@@ -57,15 +64,8 @@ module {
 
   /// A view is an immutable representation of a gathering of paths' data.
   public module View {
-    public type CreateEvent = {
-      createUser : Types.UserId;
-      createTime : Int;
-      paths : Types.Space.Paths.Paths;
-      gathering : Types.View.Gathering;
-      ttl : ?Nat;
-    };
     public type View = {
-      createEvent : CreateEvent;
+      createEvent : Event.CreateView;
       spaces : [Space.Space];
     };
   };
@@ -80,22 +80,22 @@ module {
 
     public module Puts {
       /// Sequence of puts to a common space.
-      public type Puts = SeqObj.Seq<PutValues.PutValues>;
+      public type Puts = SeqObj.Seq<PutValue.PutValue>;
 
       /// Empty (initial state).
       public func empty() : Puts {
-        SeqObj.Seq<PutValues.PutValues>(PutValues.equal, null)
+        SeqObj.Seq<PutValue.PutValue>(PutValue.equal, null)
       };
     };
 
-    /// The values of a single put operation.
-    public module PutValues {
-      public type PutValues = {
+    /// The data associated of a single put operation.
+    public module PutValue {
+      public type PutValue = {
         time : Int;
         user : Types.UserId;
-        values : [Types.Candid.Value.Value];
+        value : Types.Candid.Value.Value;
       };
-      public func equal(pv1: PutValues, pv2: PutValues) : Bool {
+      public func equal(pv1: PutValue, pv2: PutValue) : Bool {
         pv1 == pv2
       };
     };

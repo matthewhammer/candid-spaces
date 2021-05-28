@@ -45,18 +45,13 @@ public type ProfileInfo = {
 
 
 public module Space {
+  /// A Path identifies a space for data to be put, and later, viewed.
   public module Path {
     public type Path = [Text];
   };
-  public module Paths {
-    public type Paths = [Path.Path];
-  };
-  /* to do --
-  public type Sort = {
-    #set
-    #multiset
-    #sequence
-  }; */
+
+  public type Put = (user : UserId, path : Path.Path, value : Candid.Value.Value) -> ?();
+
 };
 
 public module Candid {
@@ -89,33 +84,113 @@ public module Candid {
 };
 
 public module View {
-  /// Positions are in terms of total gathered puts.
-  public type Position = Nat;
 
-  public type Timestamp = Int;
-
+  /// A `Gathering` answers the question:
+  /// How to gather put values to form a View?
   public type Gathering = {
-    #set ;
-    #multiset ;
+    /// preserve ordering of puts, and append those of gathered spaces.
+    /// initially, we only support #sequence.
     #sequence ;
+    /// to do -- gather equal data values, and count them.
+    #multiset ;
+    /// to do -- like multiset but without per-element counts.
+    #set ;
+    /// to do -- like multiset, but additionally sort based on count.
+    #multisetSort : SortDir ;
   };
 
-  public type PutValues = {
-    time : Int;
+  /// sort direction
+  public type SortDir = {
+    #decreasing;
+    #increasing
+  };
+
+  /// `Targets` names a sequence of spaces to gather into a View.
+  /// When spaces are numerous and each small,
+  /// the user creates views that aggregate many paths' data.
+  /// Views can include the data of other views, which retains its (origin)
+  /// path information.
+  ///
+  /// `createView` accepts `Targets`,
+  /// and each View it creates contains specific path information for its data,
+  /// accessible via `getFullView` and `getSubView`.
+  public module Target {
+    public type Target = {
+      #space : Space.Path.Path;
+      #view : ViewId;
+    };
+    public type Targets = [ Target ];
+  };
+
+  /// Type of `CandidSpaces.createView` relates other types defined here.
+  ///
+  /// `createView` accepts a collection of view targets, and gathers them;
+  /// each full or sub-view it provides contains specific path information for its data,
+  /// accessible via `getFullView` and `getSubView`, respectively.
+  ///
+  /// It returns a record of size information about the full view, and
+  /// size information to guide accesses to spaces within it, as subviews.
+  ///
+  public type CreateView =
+    (user_ : UserId,
+     targets_ : Target.Targets,
+     gathering_ : Gathering,
+     ttl_ : ?Nat) -> async ?CreateViewResponse;
+
+  /// The response type of `CandidSpaces.createView`.
+  /// gives size information about the full view, and targets within it.
+  /// this size information may be used to guide the definition of subviews.
+  /// the `putCount.path[i]` is the size of path `i`, in number of put operations.
+  public type CreateViewResponse = {
+    viewId : ViewId;
+    putCount : {
+      target : [Nat];
+      total : Nat;
+    }
+  };
+
+  /// Each `PutValue` record represents an atomic `CandidSpaces.put` update message.
+  /// It associates a time, user and path with a candid data sequence.
+  /// A put value is an atomic "raw data" entry of a space, as viewed by a View.
+  public type PutValue = {
+    time : Timestamp;
     user : UserId;
     path : Space.Path.Path;
-    values : [Candid.Value.Value];
+    value : Candid.Value.Value;
   };
 
-  public type View = {
-    startPos : Position;
-    endPos : Position;
-    putValues : [PutValues];
+  /// Get a full image (entire view) of gathered puts.
+  /// May fail to complete if the view is too large;
+  /// For "too large" views, use `getSubImage` multiple times, with tuning.
+  public type GetFullImage =
+    (viewer : ?UserId,
+     viewId : ViewId) -> async ?Image;
+
+  /// Get a sub-image of gathered puts.
+  /// Positions are in terms of total gathered puts.
+  public type GetSubImage = (
+    viewer : ?UserId,
+    viewId : ViewId,
+    pos : Position,
+    size : Nat) -> async ?Image;
+
+  /// The `Image` type defines the (common) response type of
+  /// `CandidSpaces.getFullImage` and `CandidSpaces.getSubImage`.
+  public type Image = {
+    viewer : ?UserId;
+    viewId : ViewId;
+    pos : Position;
+    size : Nat;
+    putValues : [ PutValue ];
   };
+
+  /// Positions are in terms of total gathered puts.
+  public type Position = Nat;
 };
+
 
 /// For test scripts, the script controls how time advances, and when.
 /// For real deployment, the service uses the IC system as the time source.
-public type TimeMode = { #ic ; #script : Int };
+public type TimeMode = { #ic ; #script : Timestamp };
 
 }

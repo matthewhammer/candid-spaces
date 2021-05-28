@@ -31,11 +31,11 @@ shared ({caller = initPrincipal}) actor class CandidSpaces () {
 
   public type ViewId = Types.ViewId;
   public type ViewPos = Types.View.Position;
-  public type View = Types.View.View;
+  public type Image = Types.View.Image;
 
   public type CandidValue = Types.Candid.Value.Value;
   public type SpacePath = Types.Space.Path.Path;
-  public type SpacePaths = Types.Space.Paths.Paths;
+  public type ViewTargets = Types.View.Target.Targets;
   public type ViewGathering = Types.View.Gathering;
 
   /// log the given event kind, with a unique ID and current time
@@ -157,7 +157,7 @@ shared ({caller = initPrincipal}) actor class CandidSpaces () {
   };
 
   /// Put candid data into the space identified by the path.
-  public shared(msg) func put(user_ : UserId, path_ : SpacePath, values_ : [CandidValue]) : async ?() {
+  public shared(msg) func put(user_ : UserId, path_ : SpacePath, value_ : CandidValue) : async ?() {
     do ? {
       accessCheck(msg.caller, #update, #user user_)!;
       // to do --
@@ -165,7 +165,7 @@ shared ({caller = initPrincipal}) actor class CandidSpaces () {
       //   based on whitelists for viewers and updaters of private spaces,
       //   and just updater whitelists of public spaces.
       //accessCheck(msg.caller, #update, #space path_)!;
-      logEvent(#put({user=user_; path=path_; values=values_}));
+      logEvent(#put({user=user_; path=path_; value=value_}));
       let space = switch (state.spaces.get(path_)) {
         case null {
                // space does not exist; create it now.
@@ -181,17 +181,14 @@ shared ({caller = initPrincipal}) actor class CandidSpaces () {
       };
       space.puts.add(
         {
-          time = timeNow_();
+          // invariant -- to do -- common time between event log and space data.
+          time = timeNow_(); // to do -- use / assert same time as logEvent above
           user = user_;
-          values = values_
+          value = value_
         });
     }
   };
 
-  public type CreateViewResponse = {
-    viewId : ViewId;
-    putCount : Nat;
-  };
 
   /// A view is an immutable representation of a gathering of paths' data.
   ///
@@ -205,24 +202,31 @@ shared ({caller = initPrincipal}) actor class CandidSpaces () {
   ///
   public func createView(
     user_ : UserId,
-    paths_ : SpacePaths,
+    targets_ : ViewTargets,
     gathering_ : ViewGathering,
     ttl_ : ?Nat)
-    : async ?CreateViewResponse
+    : async ?Types.View.CreateViewResponse
   {
     do ? {
       switch gathering_ {
         case (#sequence) { };
         case _ { assert false ; /* to do -- handle other gatherings. */ }       };
       let spaces_ = Buffer.Buffer<State.Space.Space>(0);
-      for (path in paths_.vals()) {
-        spaces_.add(state.spaces.get(path)!)
+      for (target in targets_.vals()) {
+        switch target {
+          case (#space(path)) {
+            spaces_.add(state.spaces.get(path)!)
+          };
+          case (#view(viewId)) {
+            loop { assert false };
+          };
+        }
       };
       let createEvent_ =
         {
           createUser = user_;
           createTime = timeNow_();
-          paths = paths_;
+          targets = targets_;
           gathering = gathering_ ;
           ttl = ttl_
         };
@@ -232,6 +236,7 @@ shared ({caller = initPrincipal}) actor class CandidSpaces () {
         state.viewCount += 1;
         "view-" # Int.toText(id)
       };
+      let spacesArray =
       state.views.put(
         id,
         {
@@ -239,27 +244,29 @@ shared ({caller = initPrincipal}) actor class CandidSpaces () {
           spaces = spaces_.toArray() // to do -- get immutable reps
         });
       { viewId = id;
-        putCount = 666; // to do -- count size of immutable reps
-      }
+        putCount = {
+          total = 666;  // to do
+          target = [666]; // to do
+        } }
     }
   };
 
-  /// Get a full view of gathered puts.
+
+  /// Get a full image (entire view) of gathered puts.
   /// May fail to complete if the view is too large;
-  /// For large views, use getSubView multiple times, with tuning.
-  public query(msg) func getFullView(
+  /// For "too large" views, use `getSubImage` multiple times, with tuning.
+  public query(msg) func getFullImage(
     viewer : ?UserId,
-    viewId : ViewId) : async ?View {
+    viewId : ViewId) : async ?Image {
     loop { assert false }
   };
 
-  /// Get a sub-view of gathered puts.
-  /// Positions are in terms of total gathered puts.
-  public query(msg) func getSubView(
+  /// Get a sub-image of gathered puts.
+  public query(msg) func getSubImage(
     viewer : ?UserId,
     viewId : ViewId,
-    startPos : ViewPos,
-    endPos : ViewPos) : async ?View {
+    pos : ViewPos,
+    size : Nat) : async ?Image {
     loop { assert false }
   };
 
