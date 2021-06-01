@@ -39,7 +39,7 @@ assert _ != (null : opt null);
 let viewId = call S.createView("alice",
                                vec { variant { space = vec { "fib" } };
                                      variant { space = vec { "factorial" } } },
-                               variant { sequential = null },
+                               variant { sequence = null },
                                null
                               );
 assert _ != (null : opt null);
