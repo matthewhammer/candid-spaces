@@ -36,8 +36,12 @@ assert _ != (null : opt null);
 // assert _ != (null : opt null);
 
 
-let viewId = call S.createView("alice", vec { variant { space = vec { "fib" } };
-                                              variant { space = vec { "factorial" } } });
+let viewId = call S.createView("alice",
+                               vec { variant { space = vec { "fib" } };
+                                     variant { space = vec { "factorial" } } }.
+                               variant { sequential = null },
+                               null
+                              );
 assert _ != (null : opt null);
 
 let fullImage = call S.getFullImage("alice", viewId);
