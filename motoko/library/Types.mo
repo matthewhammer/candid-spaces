@@ -156,7 +156,7 @@ public module View {
     time : Timestamp;
     user : UserId;
     path : Space.Path.Path;
-    values : Candid.Value.Values;
+    values : [ Candid.Value.Value ];
   };
 
   /// Get a full image (entire view) of gathered puts.

@@ -43,7 +43,7 @@ module {
     public type Put = {
       user : Types.UserId;
       path : Path;
-      value : Types.Candid.Value.Value;
+      values : [ Types.Candid.Value.Value ];
     };
     public type EventKind = {
       #reset : Types.TimeMode;
@@ -93,7 +93,7 @@ module {
       public type PutValue = {
         time : Int;
         user : Types.UserId;
-        value : Types.Candid.Value.Value;
+        values : [ Types.Candid.Value.Value ];
       };
       public func equal(pv1: PutValue, pv2: PutValue) : Bool {
         pv1 == pv2
