@@ -44,5 +44,5 @@ let viewId = call S.createView("alice",
                               );
 assert _ != (null : opt null);
 
-let fullImage = call S.getFullImage("alice", viewId);
+let fullImage = call S.getFullImage(opt "alice", viewId);
 assert _ != (null : opt null);
