@@ -157,7 +157,7 @@ shared ({caller = initPrincipal}) actor class CandidSpaces () {
   };
 
   /// Put candid data into the space identified by the path.
-  public shared(msg) func put(user_ : UserId, path_ : SpacePath, value_ : CandidValue) : async ?() {
+  public shared(msg) func put(user_ : UserId, path_ : SpacePath, values_ : [ CandidValue ]) : async ?() {
     do ? {
       accessCheck(msg.caller, #update, #user user_)!;
       // to do --
@@ -165,7 +165,7 @@ shared ({caller = initPrincipal}) actor class CandidSpaces () {
       //   based on whitelists for viewers and updaters of private spaces,
       //   and just updater whitelists of public spaces.
       //accessCheck(msg.caller, #update, #space path_)!;
-      logEvent(#put({user=user_; path=path_; value=value_}));
+      logEvent(#put({user=user_; path=path_; values=values_}));
       let space = switch (state.spaces.get(path_)) {
         case null {
                // space does not exist; create it now.
@@ -184,7 +184,7 @@ shared ({caller = initPrincipal}) actor class CandidSpaces () {
           // invariant -- to do -- common time between event log and space data.
           time = timeNow_(); // to do -- use / assert same time as logEvent above
           user = user_;
-          value = value_
+          values = values_
         });
     }
   };

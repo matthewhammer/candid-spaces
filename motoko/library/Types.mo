@@ -149,14 +149,14 @@ public module View {
     }
   };
 
-  /// Each `PutValue` record represents an atomic `CandidSpaces.put` update message.
+  /// Each `PutValues` record represents an atomic `CandidSpaces.put` update message.
   /// It associates a time, user and path with a candid data sequence.
   /// A put value is an atomic "raw data" entry of a space, as viewed by a View.
-  public type PutValue = {
+  public type PutValues = {
     time : Timestamp;
     user : UserId;
     path : Space.Path.Path;
-    value : Candid.Value.Value;
+    values : Candid.Value.Values;
   };
 
   /// Get a full image (entire view) of gathered puts.
@@ -181,7 +181,7 @@ public module View {
     viewId : ViewId;
     pos : Position;
     size : Nat;
-    putValues : [ PutValue ];
+    putValues : [ PutValues ];
   };
 
   /// Positions are in terms of total gathered puts.
