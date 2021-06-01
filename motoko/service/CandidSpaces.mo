@@ -212,10 +212,16 @@ shared ({caller = initPrincipal}) actor class CandidSpaces () {
         case (#sequence) { };
         case _ { assert false ; /* to do -- handle other gatherings. */ }       };
       let spaces_ = Buffer.Buffer<State.Space.Space>(0);
+      let sizes_ = Buffer.Buffer<Nat>(0);
+      var total_ = 0;
       for (target in targets_.vals()) {
         switch target {
           case (#space(path)) {
-            spaces_.add(state.spaces.get(path)!)
+            let s = state.spaces.get(path)!;
+            // space clone is "immutable copy" stored by view.
+            spaces_.add(State.Space.clone(s));
+            sizes_.add(s.puts.size());
+            total_ += s.puts.size();
           };
           case (#view(viewId)) {
             loop { assert false };
@@ -241,12 +247,12 @@ shared ({caller = initPrincipal}) actor class CandidSpaces () {
         id,
         {
           createEvent = createEvent_;
-          spaces = spaces_.toArray() // to do -- get immutable reps
+          spaces = spaces_.toArray();
         });
       { viewId = id;
         putCount = {
-          total = 666;  // to do
-          target = [666]; // to do
+          total = total_;
+          target = sizes_.toArray();
         } }
     }
   };
@@ -258,7 +264,7 @@ shared ({caller = initPrincipal}) actor class CandidSpaces () {
   public query(msg) func getFullImage(
     viewer : ?UserId,
     viewId : ViewId) : async ?Image {
-    loop { assert false }
+    loop { assert false } // to do
   };
 
   /// Get a sub-image of gathered puts.

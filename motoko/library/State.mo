@@ -5,6 +5,8 @@ import Int "mo:base/Int";
 import Trie "mo:base/Trie";
 import TrieMap "mo:base/TrieMap";
 
+import Seq "mo:sequence/Sequence";
+
 // import non-base primitives
 import Access "Access";
 import Role "Role";
@@ -75,15 +77,28 @@ module {
     public type Space = {
       createUser : Types.UserId;
       createTime : Int;
-      puts : Puts.Puts;
+      puts : Puts.PutSeqObj;
+    };
+
+    /// clone a space cheaply, in O(1) time.
+    /// cloned space is not affected by updates to original object;
+    /// specifically, cloned space has cloned put sequence.
+    public func clone(s : Space) : Space {
+      { createUser = s.createUser ;
+        createTime = s.createTime ;
+        puts = s.puts.clone() ;
+      }
     };
 
     public module Puts {
       /// Sequence of puts to a common space.
-      public type Puts = SeqObj.Seq<PutValue.PutValue>;
+      public type PutSeqObj = SeqObj.Seq<PutValue.PutValue>;
+
+      /// Sequence of puts to a common space.
+      public type PutSeq = Seq.Sequence<PutValue.PutValue>;
 
       /// Empty (initial state).
-      public func empty() : Puts {
+      public func empty() : PutSeqObj {
         SeqObj.Seq<PutValue.PutValue>(PutValue.equal, null)
       };
     };

@@ -42,7 +42,9 @@ let view = call S.createView("alice",
                                variant { sequence = null },
                                null
                               );
-assert _ != (null : opt null);
+assert view?.putCount.total == 6;
+assert view?.putCount.target[0] == 3;
+assert view?.putCount.target[1] == 3;
 
 let fullImage = call S.getFullImage(opt "alice", view?.viewId);
 assert _ != (null : opt null);
