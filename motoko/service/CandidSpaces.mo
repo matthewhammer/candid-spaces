@@ -29,6 +29,15 @@ shared ({caller = initPrincipal}) actor class CandidSpaces () {
   public type UserId = Types.UserId;
   public type ProfileInfo = Types.ProfileInfo;
 
+  public type ViewId = Types.ViewId;
+  public type ViewPos = Types.View.Position;
+  public type Image = Types.View.Image;
+
+  public type CandidValue = Types.Candid.Value.Value;
+  public type SpacePath = Types.Space.Path.Path;
+  public type ViewTargets = Types.View.Target.Targets;
+  public type ViewGathering = Types.View.Gathering;
+
   /// log the given event kind, with a unique ID and current time
   func logEvent(ek : State.Event.EventKind) {
     state.eventLog.add({
@@ -147,5 +156,144 @@ shared ({caller = initPrincipal}) actor class CandidSpaces () {
     }
   };
 
+  /// Put candid data into the space identified by the path.
+  public shared(msg) func put(user_ : UserId, path_ : SpacePath, values_ : [ CandidValue ]) : async ?() {
+    do ? {
+      accessCheck(msg.caller, #update, #user user_)!;
+      // to do --
+      // access control for spaces,
+      //   based on whitelists for viewers and updaters of private spaces,
+      //   and just updater whitelists of public spaces.
+      //accessCheck(msg.caller, #update, #space path_)!;
+      logEvent(#put({user=user_; path=path_; values=values_}));
+      let space = switch (state.spaces.get(path_)) {
+        case null {
+               // space does not exist; create it now.
+               let space = {
+                 createUser = user_;
+                 createTime = timeNow_();
+                 path = path_ ;
+                 puts = State.Space.Puts.empty();
+               };
+               state.spaces.put(path_, space);
+               space
+        };
+        case (?space) { space };
+      };
+      space.puts.add(
+        {
+          // invariant -- to do -- common time between event log and space data.
+          time = timeNow_(); // to do -- use / assert same time as logEvent above
+          user = user_;
+          values = values_
+        });
+    }
+  };
 
+
+  /// A view is an immutable representation of a gathering of paths' data.
+  ///
+  /// Create a (temporary) view of the given paths,
+  /// associated with the given user,
+  /// gathered in the given way,
+  /// with a given time to life (ttl).
+  ///
+  /// Views are inexpensive to create and are immutable once created;
+  /// to "update a view", re-create it with the same parameters, later.
+  ///
+  public func createView(
+    user_ : UserId,
+    targets_ : ViewTargets,
+    gathering_ : ViewGathering,
+    ttl_ : ?Nat)
+    : async ?Types.View.CreateViewResponse
+  {
+    do ? {
+      switch gathering_ {
+        case (#sequence) { };
+        case _ { assert false ; /* to do -- handle other gatherings. */ }       };
+      let spaces_ = Buffer.Buffer<State.Space.Space>(0);
+      let sizes_ = Buffer.Buffer<Nat>(0);
+      var total_ = 0;
+      for (target in targets_.vals()) {
+        switch target {
+          case (#space(path)) {
+            let s = state.spaces.get(path)!;
+            // space clone is "immutable copy" stored by view.
+            spaces_.add(State.Space.clone(s));
+            sizes_.add(s.puts.size());
+            total_ += s.puts.size();
+          };
+          case (#view(viewId)) {
+            loop { assert false };
+          };
+        }
+      };
+      let createEvent_ =
+        {
+          createUser = user_;
+          createTime = timeNow_();
+          targets = targets_;
+          gathering = gathering_ ;
+          ttl = ttl_
+        };
+      logEvent(#createView(createEvent_));
+      let id = do {
+        let id = state.viewCount;
+        state.viewCount += 1;
+        "view-" # Int.toText(id)
+      };
+      let spacesArray =
+      state.views.put(
+        id,
+        {
+          createEvent = createEvent_;
+          spaces = spaces_.toArray();
+        });
+      { viewId = id;
+        putCount = {
+          total = total_;
+          target = sizes_.toArray();
+        } }
+    }
+  };
+
+
+  /// Get a full image (entire view) of gathered puts.
+  /// May fail to complete if the view is too large;
+  /// For "too large" views, use `getSubImage` multiple times, with tuning.
+  public query(msg) func getFullImage(
+    viewer_ : ?UserId,
+    viewId_ : ViewId) : async ?Image {
+    do ? {
+      let v = state.views.get(viewId_)!;
+      let b = Buffer.Buffer<Types.View.PutValues>(0);
+      for (s in v.spaces.vals()) {
+        for (p in s.puts.vals()) {
+          b.add({ path = s.path ;
+                  time = p.time ;
+                  user = p.user ;
+                  values = p.values ;
+                })
+        }
+      };
+      { pos = 0;
+        size = b.size();
+        viewer = viewer_;
+        viewId = viewId_;
+        putValues = b.toArray();
+      }
+    }
+  };
+
+  /*
+  /// Get a sub-image of gathered puts.
+  public query(msg) func getSubImage(
+    viewer : ?UserId,
+    viewId : ViewId,
+    pos : ViewPos,
+    size : Nat) : async ?Image {
+    loop { assert false } // to do
+  };
+  */
 }

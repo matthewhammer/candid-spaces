@@ -18,6 +18,10 @@ module {
       Seq<X>(equal, ?seq) // O(1), by sharing immutable rep of seq.
     };
 
+    public func size() : Nat {
+      Sequence.size(seq)
+    };
+
     public func append(t : Seq<X>) {
       seq := _append(seq, t.sequence())
     };
