@@ -172,6 +172,7 @@ shared ({caller = initPrincipal}) actor class CandidSpaces () {
                let space = {
                  createUser = user_;
                  createTime = timeNow_();
+                 path = path_ ;
                  puts = State.Space.Puts.empty();
                };
                state.spaces.put(path_, space);
@@ -262,18 +263,37 @@ shared ({caller = initPrincipal}) actor class CandidSpaces () {
   /// May fail to complete if the view is too large;
   /// For "too large" views, use `getSubImage` multiple times, with tuning.
   public query(msg) func getFullImage(
-    viewer : ?UserId,
-    viewId : ViewId) : async ?Image {
-    loop { assert false } // to do
+    viewer_ : ?UserId,
+    viewId_ : ViewId) : async ?Image {
+    do ? {
+      let v = state.views.get(viewId_)!;
+      let b = Buffer.Buffer<Types.View.PutValues>(0);
+      for (s in v.spaces.vals()) {
+        for (p in s.puts.vals()) {
+          b.add({ path = s.path ;
+                  time = p.time ;
+                  user = p.user ;
+                  values = p.values ;
+                })
+        }
+      };
+      { pos = 0;
+        size = b.size();
+        viewer = viewer_;
+        viewId = viewId_;
+        putValues = b.toArray();
+      }
+    }
   };
 
+  /*
   /// Get a sub-image of gathered puts.
   public query(msg) func getSubImage(
     viewer : ?UserId,
     viewId : ViewId,
     pos : ViewPos,
     size : Nat) : async ?Image {
-    loop { assert false }
+    loop { assert false } // to do
   };
-
+  */
 }

@@ -77,6 +77,7 @@ module {
     public type Space = {
       createUser : Types.UserId;
       createTime : Int;
+      path : Path;
       puts : Puts.PutSeqObj;
     };
 
@@ -87,6 +88,7 @@ module {
       { createUser = s.createUser ;
         createTime = s.createTime ;
         puts = s.puts.clone() ;
+        path = s.path ;
       }
     };
 
