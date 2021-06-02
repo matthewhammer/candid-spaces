@@ -38,6 +38,12 @@ module {
       Sequence.iter(seq, #fwd)
     };
 
+    public func slice(startPos : Nat, size : Nat) : Seq<X> {
+      let (s12, _) = Sequence.split(seq, startPos + size);
+      let (_, s2) = Sequence.split(s12, startPos);
+      Seq<X>(equal, ?s2) // O(1), by sharing immutable rep of seq.
+    };
+
     public func revVals() : Iter.Iter<X> {
       Sequence.iter(seq, #bwd)
     };

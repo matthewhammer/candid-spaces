@@ -47,4 +47,15 @@ assert view?.putCount.target[1] == (3 : nat);
 
 let fullImage = call S.getFullImage(opt "alice", view?.viewId);
 assert _ != (null : opt null);
-fullImage
+fullImage;
+
+let firstHalf = call S.getSubImage(opt "alice", view?.viewId, 0, 3);
+assert _ != (null : opt null);
+firstHalf;
+
+let secondHalf = call S.getSubImage(opt "alice", view?.viewId, 3, 3);
+assert _ != (null : opt null);
+secondHalf;
+
+
+
