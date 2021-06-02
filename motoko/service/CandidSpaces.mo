@@ -183,6 +183,7 @@ shared ({caller = initPrincipal}) actor class CandidSpaces () {
       space.puts.add(
         {
           // invariant -- to do -- common time between event log and space data.
+          path = path_;
           time = timeNow_(); // to do -- use / assert same time as logEvent above
           user = user_;
           values = values_
@@ -214,6 +215,7 @@ shared ({caller = initPrincipal}) actor class CandidSpaces () {
         case _ { assert false ; /* to do -- handle other gatherings. */ }       };
       let spaces_ = Buffer.Buffer<State.Space.Space>(0);
       let sizes_ = Buffer.Buffer<Nat>(0);
+      let puts_ = State.Space.Puts.empty();
       var total_ = 0;
       for (target in targets_.vals()) {
         switch target {
@@ -223,6 +225,7 @@ shared ({caller = initPrincipal}) actor class CandidSpaces () {
             spaces_.add(State.Space.clone(s));
             sizes_.add(s.puts.size());
             total_ += s.puts.size();
+            puts_.append(s.puts); // gathering_ == #sequence
           };
           case (#view(viewId)) {
             loop { assert false };
@@ -249,6 +252,7 @@ shared ({caller = initPrincipal}) actor class CandidSpaces () {
         {
           createEvent = createEvent_;
           spaces = spaces_.toArray();
+          puts = puts_;
         });
       { viewId = id;
         putCount = {
@@ -268,14 +272,12 @@ shared ({caller = initPrincipal}) actor class CandidSpaces () {
     do ? {
       let v = state.views.get(viewId_)!;
       let b = Buffer.Buffer<Types.View.PutValues>(0);
-      for (s in v.spaces.vals()) {
-        for (p in s.puts.vals()) {
-          b.add({ path = s.path ;
-                  time = p.time ;
-                  user = p.user ;
-                  values = p.values ;
-                })
-        }
+      for (p in v.puts.vals()) {
+        b.add({ path = p.path ;
+                time = p.time ;
+                user = p.user ;
+                values = p.values ;
+              })
       };
       { pos = 0;
         size = b.size();
@@ -286,14 +288,30 @@ shared ({caller = initPrincipal}) actor class CandidSpaces () {
     }
   };
 
-  /*
   /// Get a sub-image of gathered puts.
   public query(msg) func getSubImage(
-    viewer : ?UserId,
-    viewId : ViewId,
-    pos : ViewPos,
-    size : Nat) : async ?Image {
-    loop { assert false } // to do
+    viewer_ : ?UserId,
+    viewId_ : ViewId,
+    pos_ : ViewPos,
+    size_ : Nat) : async ?Image {
+    do ? {
+      let v = state.views.get(viewId_)!;
+      let b = Buffer.Buffer<Types.View.PutValues>(0);
+      let s = v.puts.slice(pos_, size_);
+      for (p in s.vals()) {
+        b.add({ path = p.path ;
+                time = p.time ;
+                user = p.user ;
+                values = p.values ;
+              })
+      };
+      assert b.size() == size_;
+      { pos = pos_;
+        size = b.size();
+        viewer = viewer_;
+        viewId = viewId_;
+        putValues = b.toArray();
+      }
+    }
   };
-  */
 }

@@ -69,6 +69,7 @@ module {
     public type View = {
       createEvent : Event.CreateView;
       spaces : [Space.Space];
+      puts : Space.Puts.PutSeqObj;
     };
   };
 
@@ -110,6 +111,7 @@ module {
       public type PutValue = {
         time : Int;
         user : Types.UserId;
+        path : Path;
         values : [ Types.Candid.Value.Value ];
       };
       public func equal(pv1: PutValue, pv2: PutValue) : Bool {
