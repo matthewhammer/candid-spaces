@@ -1,9 +1,9 @@
 [package]
-name = "cannaput"
+name = "caniput"
 version = "0.1.0"
 authors = ["Matthew A Hammer <pubmah@nym.hush.com>"]
 edition = "2018"
-description = "Candid value uploader and downloader."
+description = "Candid value-putter/getter."
 license = "Apache-2.0"
 readme = "README.md"
 
