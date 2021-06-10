@@ -199,7 +199,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "cannaput"
+name = "caniput"
 version = "0.1.0"
 dependencies = [
  "candid",
