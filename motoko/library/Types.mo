@@ -63,22 +63,31 @@ public module Candid {
     public type Record = {
       fields : [ Field ];
     };
-   /* to do --
-   public type Type = ...
-   */
     public type Value = {
-      #opt : Value;
-      #vec : [ Value ];
-      #record : Record;
-      #variant : Field;
-      #principal : Principal;
-      #none;
-      #nil; // wanted #null
-      #int : Int;
-      #nat : Nat;
-      #bool : Bool;
-      #text : Text;
-      #number : Text;
+      #Bool : Bool;
+      #Null;
+      #Text : Text;
+      #Number : Text;
+      #Opt : Value;
+      #Vec : [ Value ];
+      #Record : Record;
+      #Variant : Field;
+      #Principal : Principal;
+      #Service : Principal;
+      #Func : (Principal, Text);
+      #None;
+      #Int : Int;
+      #Nat : Nat;
+      #Nat8 : Nat8;
+      #Nat16 : Nat16;
+      #Nat32 : Nat32;
+      #Nat64 : Nat64;
+      #Int8 : Int8;
+      #Int16 : Int16;
+      #Int32 : Int32;
+      #Int64 : Int64;
+      #Float32 : Float;
+      #Reserved
     };
   }
 };
