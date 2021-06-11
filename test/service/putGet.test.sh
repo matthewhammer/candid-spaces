@@ -8,30 +8,30 @@ identity Alice;
 call S.createProfile("alice", null);
 assert _ != (null : opt null);
 
-call S.put("alice", vec { "fib" }, vec { variant { nat = 1 } ; variant { nat = 1 } });
+call S.put("alice", vec { "fib" }, vec { variant { Nat = 1 } ; variant { Nat = 1 } });
 assert _ != (null : opt null);
 
-call S.put("alice", vec { "factorial" }, vec { variant { nat = 1 } ; variant { nat = 1 } });
+call S.put("alice", vec { "factorial" }, vec { variant { Nat = 1 } ; variant { Nat = 1 } });
 assert _ != (null : opt null);
 
-call S.put("alice", vec { "fib" }, vec { variant { nat = 2 } ; variant { nat = 3 } });
+call S.put("alice", vec { "fib" }, vec { variant { Nat = 2 } ; variant { Nat = 3 } });
 assert _ != (null : opt null);
 
-call S.put("alice", vec { "factorial" }, vec { variant { nat = 2 } ; variant { nat = 6 } });
+call S.put("alice", vec { "factorial" }, vec { variant { Nat = 2 } ; variant { Nat = 6 } });
 assert _ != (null : opt null);
 
-call S.put("alice", vec { "fib" }, vec { variant { nat = 5 } ; variant { nat = 8 } });
+call S.put("alice", vec { "fib" }, vec { variant { Nat = 5 } ; variant { Nat = 8 } });
 assert _ != (null : opt null);
 
-call S.put("alice", vec { "factorial" }, vec { variant { nat = 24 } ; variant { nat = 120 } });
+call S.put("alice", vec { "factorial" }, vec { variant { Nat = 24 } ; variant { Nat = 120 } });
 assert _ != (null : opt null);
 
-// call S.put("alice", vec { "colorVariants" }, vec {
-//            variant { variant = { name = "red" ; value = variant { nil } } };
-//            variant { variant = { name = "green" ; value = variant { nil } } };
-//            variant { variant = { name = "gold" ; value = variant { nil } } };
-//           });
-// assert _ != (null : opt null);
+call S.put("alice", vec { "colorVariants" }, vec {
+           variant { Variant = { name = "red" ; value = variant { nil } } };
+           variant { Variant = { name = "green" ; value = variant { nil } } };
+           variant { Variant = { name = "gold" ; value = variant { nil } } };
+           });
+assert _ != (null : opt null);
 
 let view = call S.createView("alice",
                                vec { variant { space = vec { "fib" } };
