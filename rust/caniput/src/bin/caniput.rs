@@ -27,6 +27,7 @@ use std::time::Duration;
 use tokio::task;
 
 use caniput::error::{OurError, OurResult};
+use caniput::ast::Value;
 
 /// Answers "From where do we put and get Candid values?"
 #[derive(StructOpt, Debug, Clone)]
@@ -104,10 +105,9 @@ pub struct ConnectCtx {
     pub canister_id: Principal,
 }
 
-
 /// Service call requests, expressed as data.
 pub enum ServiceCall {
-    Put(String, Values),
+    Put(String, Vec<Value>),
     Get(String),
 }
 
@@ -149,15 +149,20 @@ async fn create_agent(url: &str) -> OurResult<Agent> {
     Ok(agent)
 }
 
-async fn service_call() {
+async fn service_call(ctx: &ConnectCtx,
+                      call: &ServiceCall) -> OurResult<()> {
+    let prefix = match &call {
+        ServiceCall::Put(_, _) => "Service (put):",
+        ServiceCall::Get(_) => "Service (get):",
+    };
     let delay = garcon::Delay::builder()
         .throttle(RETRY_PAUSE)
         .timeout(REQUEST_TIMEOUT)
         .build();
     let timestamp = std::time::SystemTime::now();
-    let arg_bytes = match call.clone() {
-        ServiceCall::Put(path, vals) => candid::encode_args(path, vals).unwrap(),
-        ServiceCall::Get(target) => candid::encode_args(target).unwrap(),
+    let arg_bytes = match call {
+        ServiceCall::Put(path, vals) => candid::encode_args((path, vals)).unwrap(),
+        ServiceCall::Get(target) => candid::encode_args((target,)).unwrap(),
     };
     info!(
         "{}: Encoded argument via Candid; Arg size {:?} bytes",
@@ -166,12 +171,12 @@ async fn service_call() {
     );
     info!("{}: Awaiting response from service...", prefix);
     // do an update or query call, based on the ServiceCall case:
-    let blob_res = match call.clone() {
-        ServiceCall::Put => {
+    let blob_res : Option<Vec<u8>> = match call {
+        ServiceCall::Put(_, _) => {
             // to do
             unimplemented!()
         },
-        ServiceCall::Get(image) => {
+        ServiceCall::Get(_) => {
             // to do
             unimplemented!()
         }
@@ -184,17 +189,18 @@ async fn service_call() {
             blob_res.len(),
             elapsed
         );
-        match call.clone() {
-            ServiceCall::Put => {
+        match call {
+            ServiceCall::Put(_, _) => {
                 // to do
                 unimplemented!()
             },
-            ServiceCall::Get(image) => {
+            ServiceCall::Get(_) => {
                 // to do
                 unimplemented!()
             }
         }
     }
+    Ok(())
 }
 
 async fn run(cfg: ConnectCfg) -> OurResult<()> {
@@ -240,13 +246,13 @@ async fn main() -> OurResult<()> {
         } => {
             unimplemented!()
         },
-        CliCommand::PutText => {
+        CliCommand::PutText {
             put_path,
             candid_value,
         } => {
             unimplemented!()
         },
-        CliCommand::GetImage => {
+        CliCommand::GetImage {
             target,
         } => {
             unimplemented!()

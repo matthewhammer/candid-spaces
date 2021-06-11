@@ -1,12 +1,14 @@
 use candid::parser::value::IDLValue as ParsedValue;
 use candid::parser::value::IDLField as ParsedField;
 use candid::parser::value::IDLArgs as ParsedArgs;
-use candid::types::{Label};
-use candid::{Nat, Int, Empty};
+use candid::types::Label as ParsedLabel;
 
-// From 
+use candid::{Nat, Int, Empty};
+use candid::{CandidType, Deserialize};
+
+// From
 // https://github.com/dfinity/candid/blob/bb84807217dad6e69c78de0403030e232efaa43e/rust/candid/src/parser/value.rs#L13
-#[derive(PartialEq, Clone)]
+#[derive(PartialEq, Clone, CandidType, Deserialize)]
 pub enum Value {
     Bool(bool),
     Null,
@@ -36,15 +38,32 @@ pub enum Value {
     Reserved,
 }
 
-#[derive(PartialEq, Clone)]
+#[derive(PartialEq, Debug, Clone, CandidType, Deserialize)]
+pub enum Label {
+    Id(u32),
+    Named(String),
+    Unnamed(u32),
+}
+
+#[derive(PartialEq, Clone, CandidType, Deserialize)]
 pub struct Field {
     pub id: Label,
     pub val: Value,
 }
 
-#[derive(PartialEq, Clone)]
+#[derive(PartialEq, Clone, CandidType, Deserialize)]
 pub struct Args {
     pub args: Vec<Value>,
+}
+
+impl From<&ParsedLabel> for Label {
+    fn from(l: &ParsedLabel) -> Label {
+        match l {
+            ParsedLabel::Id(n) => Label::Id(*n),
+            ParsedLabel::Named(n) => Label::Named(n.clone()),
+            ParsedLabel::Unnamed(n) => Label::Unnamed(*n),
+        }
+    }
 }
 
 impl From<&ParsedArgs> for Args {
@@ -60,7 +79,7 @@ impl From<&ParsedArgs> for Args {
 impl From<&ParsedField> for Field {
     fn from(f: &ParsedField) -> Field {
         Field{
-            id: f.id.clone(),
+            id: Label::from(&f.id),
             val: Value::from(&f.val),
         }
     }
