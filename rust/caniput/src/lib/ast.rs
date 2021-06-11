@@ -1,9 +1,10 @@
-use candid::parser::value::IDLValue as ParsedValue;
+pub use candid::parser::value::IDLValue as ParsedValue;
+
 use candid::parser::value::IDLField as ParsedField;
 use candid::parser::value::IDLArgs as ParsedArgs;
 use candid::types::Label as ParsedLabel;
 
-use candid::{Nat, Int, Empty};
+use candid::{Nat, Int};
 use candid::{CandidType, Deserialize};
 
 // From
