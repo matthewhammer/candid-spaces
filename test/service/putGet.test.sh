@@ -27,14 +27,15 @@ call S.put("alice", vec { "factorial" }, vec { variant { Nat = 24 } ; variant { 
 assert _ != (null : opt null);
 
 call S.put("alice", vec { "colorVariants" }, vec {
-           variant { Variant = { name = "red" ; value = variant { nil } } };
-           variant { Variant = { name = "green" ; value = variant { nil } } };
-           variant { Variant = { name = "gold" ; value = variant { nil } } };
+           variant { Variant = record { name = "red" ; value = variant { nil } } };
+           variant { Variant = record { name = "green" ; value = variant { nil } } };
+           variant { Variant = record { name = "gold" ; value = variant { nil } } };
            });
 assert _ != (null : opt null);
 
 let view = call S.createView("alice",
                                vec { variant { space = vec { "fib" } };
+                                     variant { space = vec { "colorVariants" } };
                                      variant { space = vec { "factorial" } } },
                                variant { sequence = null },
                                null
