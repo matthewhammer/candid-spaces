@@ -93,30 +93,31 @@ impl From<&ParsedValue> for Value {
             ParsedValue::Null => Value::Null,
             ParsedValue::Text(s) => Value::Text(s.clone()),
             ParsedValue::Number(s) => Value::Number(s.clone()),
+            ParsedValue::Float64(f) => Value::Float64(*f),
+            ParsedValue::Opt(v) => Value::Opt(Box::new(Value::from(&**v))),
 /*
-            Float64(f64),
-            Opt(Box<IDLValue>),
-            Vec(Vec<IDLValue>),
-            Record(Vec<IDLField>),
-            Variant(Box<IDLField>, u64), // u64 represents the index from the type, defaults to 0 when parsing
-            Principal(crate::Principal),
-            Service(crate::Principal),
-            Func(crate::Principal, String),
+            ParsedValue::Vec(Vec<IDLValue>),
+            ParsedValue::Record(Vec<IDLField>),
+            ParsedValue::Variant(Box<IDLField>, u64), // u64 represents the index from the type, defaults to 0 when parsing
+
             // The following values can only be generated with type annotation
-            None,
-            Int(Int),
-            Nat(Nat),
-            Nat8(u8),
-            Nat16(u16),
-            Nat32(u32),
-            Nat64(u64),
-            Int8(i8),
-            Int16(i16),
-            Int32(i32),
-            Int64(i64),
-            Float32(f32),
-            Reserved,
 */
+            ParsedValue::Principal(p) => Value::Principal(p.clone()),
+            ParsedValue::Service(p) => Value::Service(p.clone()),
+            ParsedValue::Func(p, s) => Value::Func(p.clone(), s.clone()),
+            ParsedValue::None => Value::None,
+            ParsedValue::Int(i) => Value::Int(i.clone()),
+            ParsedValue::Nat(n) => Value::Nat(n.clone()),
+            ParsedValue::Nat8(n) => Value::Nat8(n.clone()),
+            ParsedValue::Nat16(n) => Value::Nat16(n.clone()),
+            ParsedValue::Nat32(n) => Value::Nat32(n.clone()),
+            ParsedValue::Nat64(n) => Value::Nat64(n.clone()),
+            ParsedValue::Int8(i) => Value::Int8(i.clone()),
+            ParsedValue::Int16(i) => Value::Int16(i.clone()),
+            ParsedValue::Int32(i) => Value::Int32(i.clone()),
+            ParsedValue::Int64(i) => Value::Int64(i.clone()),
+            ParsedValue::Float32(f) => Value::Float32(f.clone()),
+            ParsedValue::Reserved => Value::Reserved,
             _ => unimplemented!()
         }
     }
