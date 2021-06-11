@@ -63,6 +63,12 @@ public module Candid {
     public type Record = {
       fields : [ Field ];
     };
+    /// Candid Value AST.
+    /// [Compare with definition in Rust](https://github.com/dfinity/candid/blob/bb84807217dad6e69c78de0403030e232efaa43e/rust/candid/src/parser/value.rs#L13).
+    /// We use (non-standard-in-Motoko) variant names for two reasons:
+    /// 1. by being uppercase, they avoid candid keyword-parsing issues with ic-repl.
+    /// 2. they directly match the Rust names, so they are still "standard"-ish.
+    ///
     public type Value = {
       #Bool : Bool;
       #Null;

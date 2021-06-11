@@ -36,19 +36,6 @@ pub struct There {
     canister_id: String,
 }
 
-/// ImageTarget.  Answers "over There, what values, specifically?".
-#[derive(StructOpt, Debug, Clone)]
-pub enum ImageTarget {
-    #[structopt(name = "view", about = "identified by a machine-chosen unique ID.")]
-    View {
-        viewId : String
-    },
-    #[structopt(name = "space", about = "identified by a human-chosen path: non-empty list of strings.")]
-    Space {
-        path : Vec<String>
-    },
-}
-
 /// Caniput (Candid data transporter.)
 #[derive(StructOpt, Debug, Clone)]
 #[structopt(name = "caniput", raw(setting = "clap::AppSettings::DeriveDisplayOrder"))]
@@ -83,19 +70,6 @@ pub enum CliCommand {
         put_path: String,
         candid_value: String,
     },
-    #[structopt(name = "file", about = "put a candid value there, stored here in a file.")]
-    PutFile {
-        /// File is text, not binary (default).
-        #[structopt(short = "t", long = "text")]
-        is_text: bool,
-        put_path: String,
-        candid_file: String,
-    },
-    #[structopt(name = "get", about = "get a candid value stream here that was put there.")]
-    GetImage {
-        #[structopt(subcommand)]
-        target: ImageTarget,
-    }
 }
 
 /// Connection context: IC agent object, for server calls, and configuration info.
@@ -108,7 +82,6 @@ pub struct ConnectCtx {
 /// Service call requests, expressed as data.
 pub enum ServiceCall {
     Put(String, Vec<Value>),
-    Get(String),
 }
 
 /// Connection configuration
@@ -153,7 +126,6 @@ async fn service_call(ctx: &ConnectCtx,
                       call: &ServiceCall) -> OurResult<()> {
     let prefix = match &call {
         ServiceCall::Put(_, _) => "Service (put):",
-        ServiceCall::Get(_) => "Service (get):",
     };
     let delay = garcon::Delay::builder()
         .throttle(RETRY_PAUSE)
@@ -162,7 +134,6 @@ async fn service_call(ctx: &ConnectCtx,
     let timestamp = std::time::SystemTime::now();
     let arg_bytes = match call {
         ServiceCall::Put(path, vals) => candid::encode_args((path, vals)).unwrap(),
-        ServiceCall::Get(target) => candid::encode_args((target,)).unwrap(),
     };
     info!(
         "{}: Encoded argument via Candid; Arg size {:?} bytes",
@@ -176,10 +147,6 @@ async fn service_call(ctx: &ConnectCtx,
             // to do
             unimplemented!()
         },
-        ServiceCall::Get(_) => {
-            // to do
-            unimplemented!()
-        }
     };
     let elapsed = timestamp.elapsed().unwrap();
     if let Some(blob_res) = blob_res {
@@ -194,10 +161,6 @@ async fn service_call(ctx: &ConnectCtx,
                 // to do
                 unimplemented!()
             },
-            ServiceCall::Get(_) => {
-                // to do
-                unimplemented!()
-            }
         }
     }
     Ok(())
@@ -239,21 +202,9 @@ async fn main() -> OurResult<()> {
             CliOpt::clap().gen_completions_to("caniput", s, &mut io::stdout());
             info!("done");
         }
-        CliCommand::PutFile {
-            is_text,
-            put_path,
-            candid_file
-        } => {
-            unimplemented!()
-        },
         CliCommand::PutText {
             put_path,
             candid_value,
-        } => {
-            unimplemented!()
-        },
-        CliCommand::GetImage {
-            target,
         } => {
             unimplemented!()
         },
