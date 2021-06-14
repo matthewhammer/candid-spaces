@@ -95,13 +95,19 @@ impl From<&ParsedValue> for Value {
             ParsedValue::Number(s) => Value::Number(s.clone()),
             ParsedValue::Float64(f) => Value::Float64(*f),
             ParsedValue::Opt(v) => Value::Opt(Box::new(Value::from(&**v))),
-/*
-            ParsedValue::Vec(Vec<IDLValue>),
-            ParsedValue::Record(Vec<IDLField>),
-            ParsedValue::Variant(Box<IDLField>, u64), // u64 represents the index from the type, defaults to 0 when parsing
-
-            // The following values can only be generated with type annotation
-*/
+            ParsedValue::Vec(v1) => {
+                let mut v2 = vec!();
+                for v in v1.iter() { v2.push(Value::from(v)) };
+                Value::Vec(v2)
+            },
+            ParsedValue::Variant(vv) => {
+                Value::Variant(Box::new(Field::from(&*vv.0)))
+            },
+            ParsedValue::Record(fs1) => {
+                let mut fs2 = vec!();
+                for f in fs1.iter() { fs2.push(Field::from(f)) };
+                Value::Record(fs2)
+            },
             ParsedValue::Principal(p) => Value::Principal(p.clone()),
             ParsedValue::Service(p) => Value::Service(p.clone()),
             ParsedValue::Func(p, s) => Value::Func(p.clone(), s.clone()),
@@ -118,7 +124,6 @@ impl From<&ParsedValue> for Value {
             ParsedValue::Int64(i) => Value::Int64(i.clone()),
             ParsedValue::Float32(f) => Value::Float32(f.clone()),
             ParsedValue::Reserved => Value::Reserved,
-            _ => unimplemented!()
         }
     }
 }

@@ -56,13 +56,6 @@ public module Space {
 
 public module Candid {
   public module Value {
-    public type Field = {
-      name : Text;
-      value : Value
-    };
-    public type Record = {
-      fields : [ Field ];
-    };
     /// Candid Value AST.
     /// [Compare with definition in Rust](https://github.com/dfinity/candid/blob/bb84807217dad6e69c78de0403030e232efaa43e/rust/candid/src/parser/value.rs#L13).
     /// We use (non-standard-in-Motoko) variant names for two reasons:
@@ -76,7 +69,7 @@ public module Candid {
       #Number : Text;
       #Opt : Value;
       #Vec : [ Value ];
-      #Record : Record;
+      #Record : [ Field ];
       #Variant : Field;
       #Principal : Principal;
       #Service : Principal;
@@ -94,6 +87,15 @@ public module Candid {
       #Int64 : Int64;
       #Float32 : Float;
       #Reserved
+    };
+    public type Label = {
+      #Id : Nat32;
+      #Named : Text;
+      #Unnamed : Nat32;
+    };
+    public type Field = {
+      id : Label;
+      val : Value
     };
   }
 };
