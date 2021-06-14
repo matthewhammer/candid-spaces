@@ -32,12 +32,11 @@ jobs:
         dfx cache install
         # cp -f $HOME/bin/moc $HOME/.cache/dfinity/versions/$DFX_VERSION/moc
         dfx start --background
-        dfx deploy --no-wallet CandidSpaces
     - name: Test
       run: |
         (for f in test/service/*.test.sh; do
           echo "==== Run test $f ===="
-          dfx canister --no-wallet call CandidSpaces reset 'variant { script = 0 }'
+          dfx deploy --no-wallet CandidSpaces
           ic-repl -r http://localhost:8000 "$f" || exit
         done)
     - name: stop dfx
