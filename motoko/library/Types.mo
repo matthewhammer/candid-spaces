@@ -56,29 +56,46 @@ public module Space {
 
 public module Candid {
   public module Value {
-    public type Field = {
-      name : Text;
-      value : Value
-    };
-    public type Record = {
-      fields : [ Field ];
-    };
-   /* to do --
-   public type Type = ...
-   */
+    /// Candid Value AST.
+    /// [Compare with definition in Rust](https://github.com/dfinity/candid/blob/bb84807217dad6e69c78de0403030e232efaa43e/rust/candid/src/parser/value.rs#L13).
+    /// We use (non-standard-in-Motoko) variant names for two reasons:
+    /// 1. by being uppercase, they avoid candid keyword-parsing issues with ic-repl.
+    /// 2. they directly match the Rust names, so they are still "standard"-ish.
+    ///
     public type Value = {
-      #opt : Value;
-      #vec : [ Value ];
-      #record : Record;
-      #variant : Field;
-      #principal : Principal;
-      #none;
-      #nil; // wanted #null
-      #int : Int;
-      #nat : Nat;
-      #bool : Bool;
-      #text : Text;
-      #number : Text;
+      #Bool : Bool;
+      #Null;
+      #Text : Text;
+      #Number : Text;
+      #Opt : Value;
+      #Vec : [ Value ];
+      #Record : [ Field ];
+      #Variant : Field;
+      #Principal : Principal;
+      #Service : Principal;
+      #Func : (Principal, Text);
+      #None;
+      #Int : Int;
+      #Nat : Nat;
+      #Nat8 : Nat8;
+      #Nat16 : Nat16;
+      #Nat32 : Nat32;
+      #Nat64 : Nat64;
+      #Int8 : Int8;
+      #Int16 : Int16;
+      #Int32 : Int32;
+      #Int64 : Int64;
+      #Float32 : Float;
+      #Reserved
+    };
+    public type Label = {
+      #Id : Nat32;
+      #Named : Text;
+      #Unnamed : Nat32;
+    };
+    public type Field = {
+      id : Label;
+      val : Value
     };
   }
 };

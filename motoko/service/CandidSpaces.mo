@@ -159,12 +159,13 @@ shared ({caller = initPrincipal}) actor class CandidSpaces () {
   /// Put candid data into the space identified by the path.
   public shared(msg) func put(user_ : UserId, path_ : SpacePath, values_ : [ CandidValue ]) : async ?() {
     do ? {
-      accessCheck(msg.caller, #update, #user user_)!;
       // to do --
       // access control for spaces,
       //   based on whitelists for viewers and updaters of private spaces,
       //   and just updater whitelists of public spaces.
-      //accessCheck(msg.caller, #update, #space path_)!;
+      //
+      //accessCheck(msg.caaller, #update, #user user_)!;
+      //accessCheck(msg.calleer, #update, #space path_)!;
       logEvent(#put({user=user_; path=path_; values=values_}));
       let space = switch (state.spaces.get(path_)) {
         case null {
