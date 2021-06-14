@@ -72,7 +72,7 @@ shared ({caller = initPrincipal}) actor class CandidSpaces () {
   // responsible for adding metadata from the user to the state.
   // a null principal means that the username has no valid callers (yet), and the admin
   // must relate one or more principals to it.
-  func createProfile_(userName_ : Text, p: ?Principal) : ?() {
+  func createProfile_(caller_ : Principal, userName_ : Text) : ?() {
     switch (state.profiles.get(userName_)) {
       case (?_) { /* error -- ID already taken. */ null };
       case null { /* ok, not taken yet. */
@@ -81,12 +81,9 @@ shared ({caller = initPrincipal}) actor class CandidSpaces () {
             userName = userName_ ;
             createdAt = now ;
         });
-        logEvent(#createProfile({userName=userName_}));
+        logEvent(#createProfile({userName=userName_; caller = caller_}));
         state.access.userRole.put(userName_, #user);
-        switch p {
-          case null { }; // no related principals, yet.
-          case (?p) { state.access.userPrincipal.put(userName_, p); }
-        };
+        state.access.userPrincipal.put(userName_, caller_);
         // success
         ?()
       };
@@ -100,7 +97,7 @@ shared ({caller = initPrincipal}) actor class CandidSpaces () {
   public shared(msg) func createProfile(userName : Text) : async ?ProfileInfo {
     do ? {
       accessCheck(msg.caller, #create, #user userName)!;
-      createProfile_(userName, ?msg.caller)!;
+      createProfile_(msg.caller, userName)!;
       // return the full profile info
       getProfileInfo_(?userName, userName)! // self-view
     }
@@ -192,6 +189,7 @@ shared ({caller = initPrincipal}) actor class CandidSpaces () {
         case null {
                // space does not exist; create it now.
                let space = {
+                 createCaller = msg.caller;
                  createUser = user_;
                  createTime = timeNow_();
                  path = path_ ;
@@ -224,7 +222,7 @@ shared ({caller = initPrincipal}) actor class CandidSpaces () {
   /// Views are inexpensive to create and are immutable once created;
   /// to "update a view", re-create it with the same parameters, later.
   ///
-  public func createView(
+  public shared(msg) func createView(
     user_ : UserId,
     targets_ : ViewTargets,
     gathering_ : ViewGathering,
@@ -256,6 +254,7 @@ shared ({caller = initPrincipal}) actor class CandidSpaces () {
       };
       let createEvent_ =
         {
+          caller = msg.caller;
           createUser = user_;
           createTime = timeNow_();
           targets = targets_;
