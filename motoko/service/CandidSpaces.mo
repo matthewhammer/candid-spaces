@@ -103,53 +103,8 @@ shared ({caller = initPrincipal}) actor class CandidSpaces () {
     }
   };
 
-  var timeMode : {#ic ; #script} =
-    switch (Param.timeMode) {
-     case (#ic) #ic;
-     case (#script _) #script
-    };
-
-  var scriptTime : Int = 0;
-
   func timeNow_() : Int {
-    switch timeMode {
-      case (#ic) { Time.now() };
-      case (#script) { scriptTime };
-    }
-  };
-
-  public shared(msg) func scriptTimeTick() : async ?() {
-    do ? {
-      accessCheck(msg.caller, #admin, #all)!;
-      assert (timeMode == #script);
-      scriptTime := scriptTime + 1;
-    }
-  };
-
-  func reset_( mode : { #ic ; #script : Int } ) {
-    setTimeMode_(mode);
-    state := State.empty({ admin = state.access.admin });
-  };
-
-  public shared(msg) func reset( mode : { #ic ; #script : Int } ) : async ?() {
-    do ? {
-      accessCheck(msg.caller, #admin, #all)!;
-      reset_(mode)
-    }
-  };
-
-  func setTimeMode_( mode : { #ic ; #script : Int } ) {
-    switch mode {
-      case (#ic) { timeMode := #ic };
-      case (#script st) { timeMode := #script ; scriptTime := st };
-    }
-  };
-
-  public shared(msg) func setTimeMode( mode : { #ic ; #script : Int } ) : async ?() {
-    do ? {
-      accessCheck(msg.caller, #admin, #all)!;
-      setTimeMode_(mode)
-    }
+    Time.now()
   };
 
   func getProfileInfo_(_viewer : ?UserId, target : UserId) : ?ProfileInfo {
@@ -306,6 +261,23 @@ shared ({caller = initPrincipal}) actor class CandidSpaces () {
         viewId = viewId_;
         putValues = b.toArray();
       }
+    }
+  };
+
+  public query(msg) func logTail() : async ?[State.Event.Event] {
+    // 20210614-1712 no access checks, for now.
+    // 20210614-1712 to do -- access checks that filter out or redact the log.
+    do ? {
+      let tail = Buffer.Buffer<State.Event.Event>(0);
+      let iter = Sequence.iter(eventLog, #bwd);
+      var count = 0;
+      while (tail.size() < 10) {
+        switch (iter.next()) {
+          case null { return ?tail.toArray() };
+          case (?e) { tail.add(e); }
+        }
+      };
+      tail.toArray()
     }
   };
 
