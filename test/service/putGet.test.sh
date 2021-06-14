@@ -27,9 +27,9 @@ call S.put("alice", vec { "factorial" }, vec { variant { Nat = 24 } ; variant { 
 assert _ != (null : opt null);
 
 call S.put("alice", vec { "colorVariants" }, vec {
-           variant { Variant = record { id = variant { named = "red"  }; val = variant { Null } } };
-           variant { Variant = record { id = variant { named = "green" }; val = variant { Null } } };
-           variant { Variant = record { id = variant { named = "gold" }; val = variant { Null } } };
+           variant { Variant = record { id = variant { Named = "red"  }; val = variant { Null } } };
+           variant { Variant = record { id = variant { Named = "green" }; val = variant { Null } } };
+           variant { Variant = record { id = variant { Named = "gold" }; val = variant { Null } } };
            });
 assert _ != (null : opt null);
 
