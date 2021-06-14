@@ -43,6 +43,7 @@ module {
       ttl : ?Nat;
     };
     public type Put = {
+      caller : Principal;
       user : Types.UserId;
       path : Path;
       values : [ Types.Candid.Value.Value ];

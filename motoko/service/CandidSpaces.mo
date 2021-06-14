@@ -21,10 +21,22 @@ import Text "mo:base/Text";
 import Time "mo:base/Time";
 import TrieMap "mo:base/TrieMap";
 import Types "../library/Types";
+import Sequence "mo:sequence/Sequence";
 
 shared ({caller = initPrincipal}) actor class CandidSpaces () {
 
   var state = State.empty({ admin = initPrincipal });
+
+  /// Stable memory-based event log
+  stable var eventLog : EventLog = Sequence.empty();
+  stable var eventCount : Nat = 0;
+
+  /// Sequence for stable memory-based event log
+  public type Sequence<X> = Sequence.Sequence<X>;
+
+  /// Type for stable memory-based event log
+  public type Event = State.Event.Event;
+  public type EventLog = Sequence<Event>;
 
   public type UserId = Types.UserId;
   public type ProfileInfo = Types.ProfileInfo;
@@ -38,13 +50,22 @@ shared ({caller = initPrincipal}) actor class CandidSpaces () {
   public type ViewTargets = Types.View.Target.Targets;
   public type ViewGathering = Types.View.Gathering;
 
+  let append = Sequence.defaultAppend();
+
   /// log the given event kind, with a unique ID and current time
   func logEvent(ek : State.Event.EventKind) {
-    state.eventLog.add({
-                         id = state.eventCount ;
-                         time = timeNow_() ;
-                         kind = ek
-                       });
+    let e = {
+      id = eventCount ;
+      time = timeNow_() ;
+      kind = ek
+    };
+
+    /// Stable memory log (full history).
+    eventLog := append<Event>(eventLog, Sequence.make(e));
+    eventCount += 1;
+
+    /// Flexible memory log (history since last upgrade).
+    state.eventLog.add(e);
     state.eventCount += 1;
   };
 
@@ -166,7 +187,7 @@ shared ({caller = initPrincipal}) actor class CandidSpaces () {
       //
       //accessCheck(msg.caaller, #update, #user user_)!;
       //accessCheck(msg.calleer, #update, #space path_)!;
-      logEvent(#put({user=user_; path=path_; values=values_}));
+      logEvent(#put({caller=msg.caller; user=user_; path=path_; values=values_}));
       let space = switch (state.spaces.get(path_)) {
         case null {
                // space does not exist; create it now.
