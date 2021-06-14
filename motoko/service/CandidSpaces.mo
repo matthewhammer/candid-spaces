@@ -21,10 +21,22 @@ import Text "mo:base/Text";
 import Time "mo:base/Time";
 import TrieMap "mo:base/TrieMap";
 import Types "../library/Types";
+import Sequence "mo:sequence/Sequence";
 
 shared ({caller = initPrincipal}) actor class CandidSpaces () {
 
   var state = State.empty({ admin = initPrincipal });
+
+  /// Stable memory-based event log
+  stable var eventLog : EventLog = Sequence.empty();
+  stable var eventCount : Nat = 0;
+
+  /// Sequence for stable memory-based event log
+  public type Sequence<X> = Sequence.Sequence<X>;
+
+  /// Type for stable memory-based event log
+  public type Event = State.Event.Event;
+  public type EventLog = Sequence<Event>;
 
   public type UserId = Types.UserId;
   public type ProfileInfo = Types.ProfileInfo;
@@ -38,20 +50,29 @@ shared ({caller = initPrincipal}) actor class CandidSpaces () {
   public type ViewTargets = Types.View.Target.Targets;
   public type ViewGathering = Types.View.Gathering;
 
+  let append = Sequence.defaultAppend();
+
   /// log the given event kind, with a unique ID and current time
   func logEvent(ek : State.Event.EventKind) {
-    state.eventLog.add({
-                         id = state.eventCount ;
-                         time = timeNow_() ;
-                         kind = ek
-                       });
+    let e = {
+      id = eventCount ;
+      time = timeNow_() ;
+      kind = ek
+    };
+
+    /// Stable memory log (full history).
+    eventLog := append<Event>(eventLog, Sequence.make(e));
+    eventCount += 1;
+
+    /// Flexible memory log (history since last upgrade).
+    state.eventLog.add(e);
     state.eventCount += 1;
   };
 
   // responsible for adding metadata from the user to the state.
   // a null principal means that the username has no valid callers (yet), and the admin
   // must relate one or more principals to it.
-  func createProfile_(userName_ : Text, p: ?Principal) : ?() {
+  func createProfile_(caller_ : Principal, userName_ : Text) : ?() {
     switch (state.profiles.get(userName_)) {
       case (?_) { /* error -- ID already taken. */ null };
       case null { /* ok, not taken yet. */
@@ -60,12 +81,9 @@ shared ({caller = initPrincipal}) actor class CandidSpaces () {
             userName = userName_ ;
             createdAt = now ;
         });
-        logEvent(#createProfile({userName=userName_}));
+        logEvent(#createProfile({userName=userName_; caller = caller_}));
         state.access.userRole.put(userName_, #user);
-        switch p {
-          case null { }; // no related principals, yet.
-          case (?p) { state.access.userPrincipal.put(userName_, p); }
-        };
+        state.access.userPrincipal.put(userName_, caller_);
         // success
         ?()
       };
@@ -79,7 +97,7 @@ shared ({caller = initPrincipal}) actor class CandidSpaces () {
   public shared(msg) func createProfile(userName : Text) : async ?ProfileInfo {
     do ? {
       accessCheck(msg.caller, #create, #user userName)!;
-      createProfile_(userName, ?msg.caller)!;
+      createProfile_(msg.caller, userName)!;
       // return the full profile info
       getProfileInfo_(?userName, userName)! // self-view
     }
@@ -166,11 +184,12 @@ shared ({caller = initPrincipal}) actor class CandidSpaces () {
       //
       //accessCheck(msg.caaller, #update, #user user_)!;
       //accessCheck(msg.calleer, #update, #space path_)!;
-      logEvent(#put({user=user_; path=path_; values=values_}));
+      logEvent(#put({caller=msg.caller; user=user_; path=path_; values=values_}));
       let space = switch (state.spaces.get(path_)) {
         case null {
                // space does not exist; create it now.
                let space = {
+                 createCaller = msg.caller;
                  createUser = user_;
                  createTime = timeNow_();
                  path = path_ ;
@@ -203,7 +222,7 @@ shared ({caller = initPrincipal}) actor class CandidSpaces () {
   /// Views are inexpensive to create and are immutable once created;
   /// to "update a view", re-create it with the same parameters, later.
   ///
-  public func createView(
+  public shared(msg) func createView(
     user_ : UserId,
     targets_ : ViewTargets,
     gathering_ : ViewGathering,
@@ -235,6 +254,7 @@ shared ({caller = initPrincipal}) actor class CandidSpaces () {
       };
       let createEvent_ =
         {
+          caller = msg.caller;
           createUser = user_;
           createTime = timeNow_();
           targets = targets_;

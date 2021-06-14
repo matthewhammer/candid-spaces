@@ -33,9 +33,11 @@ module {
 
   public module Event {
     public type CreateProfile = {
+      caller : Principal;
       userName : Text;
     };
     public type CreateView = {
+      caller : Principal;
       createUser : Types.UserId;
       createTime : Int;
       targets : Types.View.Target.Targets;
@@ -43,6 +45,7 @@ module {
       ttl : ?Nat;
     };
     public type Put = {
+      caller : Principal;
       user : Types.UserId;
       path : Path;
       values : [ Types.Candid.Value.Value ];
@@ -76,6 +79,7 @@ module {
   public module Space {
     /// Space of puts.
     public type Space = {
+      createCaller : Principal;
       createUser : Types.UserId;
       createTime : Int;
       path : Path;
@@ -86,7 +90,8 @@ module {
     /// cloned space is not affected by updates to original object;
     /// specifically, cloned space has cloned put sequence.
     public func clone(s : Space) : Space {
-      { createUser = s.createUser ;
+      { createCaller = s.createCaller ;
+        createUser = s.createUser ;
         createTime = s.createTime ;
         puts = s.puts.clone() ;
         path = s.path ;
