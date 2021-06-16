@@ -1,0 +1,13 @@
+putTree
+├── apple
+│   ├── oneTwoThree
+│   └── vecOneTwoThree
+├── avocado
+│   ├── oneTwoThree
+│   └── vecOneTwoThree
+├── banana
+│   ├── oneTwoThree
+│   └── vecOneTwoThree
+└── index
+
+3 directories, 7 files
