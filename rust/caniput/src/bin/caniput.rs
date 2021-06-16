@@ -61,10 +61,15 @@ pub enum CliCommand {
         about = "Generate shell scripts for auto-completions."
     )]
     Completions { shell: Shell },
-    #[structopt(name = "text", about = "put a candid value there, expressed here as a text arg.")]
-    PutText {
+    #[structopt(name = "value", about = "put a candid value there, expressed here as a text arg.")]
+    PutValue {
         put_path: String,
         candid_value: String,
+    },
+    #[structopt(name = "text", about = "put a text value there, expressed here as a text arg.")]
+    PutText {
+        put_path: String,
+        candid_text: String,
     },
 }
 
@@ -199,13 +204,20 @@ async fn main() -> OurResult<()> {
             // see also: https://clap.rs/effortless-auto-completion/
             CliOpt::clap().gen_completions_to("caniput", s, &mut io::stdout());
             info!("done");
-        }
-        CliCommand::PutText {
+        },
+        CliCommand::PutValue {
             put_path,
             candid_value,
         } => {
             let parsed_val : ParsedValue = candid_value.parse()?;
             let ast = Value::from(&parsed_val);
+            service_call(&cc, &ServiceCall::Put(vec!(put_path), vec!(ast))).await?;
+        },
+        CliCommand::PutText {
+            put_path,
+            candid_text,
+        } => {
+            let ast = Value::Text(candid_text.clone());
             service_call(&cc, &ServiceCall::Put(vec!(put_path), vec!(ast))).await?;
         },
     };
