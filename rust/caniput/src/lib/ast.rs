@@ -7,6 +7,8 @@ use candid::types::Label as ParsedLabel;
 use candid::{Nat, Int};
 use candid::{CandidType, Deserialize};
 
+use log::{info, debug};
+
 use crate::error::*;
 
 #[derive(PartialEq, Clone, CandidType, Deserialize)]
@@ -149,6 +151,7 @@ impl From<&ParsedValue> for Value {
 
 /// Read filesystem starting at `path`, and construct a `File`.
 pub fn file_of_path(path: &std::path::Path) -> OurResult<File> {
+    info!("Reading path {:?}", path);
     if path.is_dir() {
         let mut name_files = vec!();
         for entry in std::fs::read_dir(path)? {
@@ -162,10 +165,12 @@ pub fn file_of_path(path: &std::path::Path) -> OurResult<File> {
         let s = std::fs::read_to_string(path)?;
         let pv : Result<ParsedValue, _> = s.parse();
         if let Ok(v) = pv {
+            debug!("Parsed value {}", v);
             Ok(File::Value(Value::from(&v)))
         } else {
             let pa : Result<ParsedArgs, _> = s.parse();
             if let Ok(a) = pa {
+                debug!("Parsed args {}", a);
                 Ok(File::Args(Args::from(&a)))
             } else {
                 Ok(File::Text(s))

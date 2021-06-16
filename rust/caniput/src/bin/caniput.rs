@@ -226,6 +226,7 @@ async fn main() -> OurResult<()> {
             service_call(&cc, &ServiceCall::Put(vec!(put_path), vec!(ast))).await?;
         },
         CliCommand::PutTree { put_path, local_path } => {
+            info!("Reading local tree from path {}", local_path);
             let file = caniput::ast::file_of_path(std::path::Path::new(&local_path))?;
             let ast = Value::File(Box::new(file));
             service_call(&cc, &ServiceCall::Put(vec!(put_path), vec!(ast))).await?;
