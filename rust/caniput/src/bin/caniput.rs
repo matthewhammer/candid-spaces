@@ -1,5 +1,5 @@
-extern crate garcon;
 extern crate futures;
+extern crate garcon;
 extern crate ic_agent;
 extern crate ic_types;
 extern crate num_traits;
@@ -21,12 +21,15 @@ use ic_types::Principal;
 use std::io;
 use std::time::Duration;
 
-use caniput::error::{OurResult};
 use caniput::ast::{ParsedValue, Value};
+use caniput::error::OurResult;
 
 /// Caniput (Candid data transporter.)
 #[derive(StructOpt, Debug, Clone)]
-#[structopt(name = "caniput", raw(setting = "clap::AppSettings::DeriveDisplayOrder"))]
+#[structopt(
+    name = "caniput",
+    raw(setting = "clap::AppSettings::DeriveDisplayOrder")
+)]
 pub struct CliOpt {
     /// Trace-level logging (most verbose)
     #[structopt(short = "t", long = "trace-log")]
@@ -39,15 +42,19 @@ pub struct CliOpt {
     pub log_info: bool,
 
     /// Username
-    #[structopt(short = "u", long = "username", default_value="guest")]
+    #[structopt(short = "u", long = "username", default_value = "guest")]
     pub username: String,
 
     /// Replica URL
-    #[structopt(short = "r", long = "replica", default_value="http://127.0.0.1:8000")]
+    #[structopt(short = "r", long = "replica", default_value = "http://127.0.0.1:8000")]
     pub replica_url: String,
 
     /// Canister ID
-    #[structopt(short = "c", long = "canister", default_value="rrkah-fqaaa-aaaaa-aaaaq-cai")]
+    #[structopt(
+        short = "c",
+        long = "canister",
+        default_value = "rrkah-fqaaa-aaaaa-aaaaq-cai"
+    )]
     pub canister_id: String,
 
     #[structopt(subcommand)]
@@ -61,17 +68,26 @@ pub enum CliCommand {
         about = "Generate shell scripts for auto-completions."
     )]
     Completions { shell: Shell },
-    #[structopt(name = "value", about = "put a candid value there, expressed here as a text arg.")]
+    #[structopt(
+        name = "value",
+        about = "put a candid value there, expressed here as a text arg."
+    )]
     PutValue {
         put_path: String,
         candid_value: String,
     },
-    #[structopt(name = "text", about = "put a text value there, expressed here as a text arg.")]
+    #[structopt(
+        name = "text",
+        about = "put a text value there, expressed here as a text arg."
+    )]
     PutText {
         put_path: String,
         candid_text: String,
     },
-    #[structopt(name = "tree", about = "put (local file/directory) tree there, expressed here as a path.")]
+    #[structopt(
+        name = "tree",
+        about = "put (local file/directory) tree there, expressed here as a path."
+    )]
     PutTree {
         put_path: String,
         local_path: String,
@@ -89,7 +105,6 @@ pub struct ConnectCtx {
 pub enum ServiceCall {
     Put(Vec<String>, Vec<Value>),
 }
-
 
 fn init_log(level_filter: log::LevelFilter) {
     use env_logger::{Builder, WriteStyle};
@@ -118,16 +133,15 @@ async fn create_agent(url: &str) -> OurResult<Agent> {
         .with_identity(ident)
         .build()?;
     info!("built agent.");
-    if true { // to do -- CLI switch.
+    if true {
+        // to do -- CLI switch.
         agent.fetch_root_key().await?;
     }
     info!("got root key.");
     Ok(agent)
 }
 
-async fn service_call(ctx: &ConnectCtx,
-                      call: &ServiceCall) -> OurResult<()> {
-
+async fn service_call(ctx: &ConnectCtx, call: &ServiceCall) -> OurResult<()> {
     let prefix = match &call {
         ServiceCall::Put(_, _) => "Service (put):",
     };
@@ -140,14 +154,14 @@ async fn service_call(ctx: &ConnectCtx,
     let arg_bytes = match call {
         ServiceCall::Put(path, vals) => candid::encode_args((user, path, vals)).unwrap(),
     };
+    let arg_bytes_len = arg_bytes.len();
     info!(
         "{}: Encoded argument via Candid; Arg size {:?} bytes",
-        prefix,
-        arg_bytes.len()
+        prefix, arg_bytes_len,
     );
     info!("{}: Awaiting response from service...", prefix);
     // do an update or query call, based on the ServiceCall case:
-    let blob_res : Option<Vec<u8>> = match call {
+    let blob_res: Option<Vec<u8>> = match call {
         ServiceCall::Put(_, _) => {
             let resp = ctx
                 .agent
@@ -156,7 +170,7 @@ async fn service_call(ctx: &ConnectCtx,
                 .call_and_wait(delay)
                 .await?;
             Some(resp)
-        },
+        }
     };
     let elapsed = timestamp.elapsed().unwrap();
     if let Some(blob_res) = blob_res {
@@ -166,16 +180,17 @@ async fn service_call(ctx: &ConnectCtx,
             blob_res.len(),
             elapsed
         );
-        let result_flag : (Option<()>,) = candid::decode_args(&blob_res)?;
+        let result_flag: (Option<()>,) = candid::decode_args(&blob_res)?;
         match result_flag {
             (None,) => error!("Failure to put."),
-            (Some(()),) => info!("Put value successfully."),
+            (Some(()),) => info!(
+                "Successful put: {} arg bytes; {:?} elapsed; completed.",
+                arg_bytes_len, elapsed
+            ),
         };
         Ok(())
     } else {
-        error!("{}: Error response. Elapsed time {:?}.",
-               prefix,
-               elapsed);
+        error!("{}: Error response. Elapsed time {:?}.", prefix, elapsed);
         Ok(())
     }
 }
@@ -209,28 +224,31 @@ async fn main() -> OurResult<()> {
             // see also: https://clap.rs/effortless-auto-completion/
             CliOpt::clap().gen_completions_to("caniput", s, &mut io::stdout());
             info!("done");
-        },
+        }
         CliCommand::PutValue {
             put_path,
             candid_value,
         } => {
-            let parsed_val : ParsedValue = candid_value.parse()?;
+            let parsed_val: ParsedValue = candid_value.parse()?;
             let ast = Value::from(&parsed_val);
-            service_call(&cc, &ServiceCall::Put(vec!(put_path), vec!(ast))).await?;
-        },
+            service_call(&cc, &ServiceCall::Put(vec![put_path], vec![ast])).await?;
+        }
         CliCommand::PutText {
             put_path,
             candid_text,
         } => {
             let ast = Value::Text(candid_text.clone());
-            service_call(&cc, &ServiceCall::Put(vec!(put_path), vec!(ast))).await?;
-        },
-        CliCommand::PutTree { put_path, local_path } => {
+            service_call(&cc, &ServiceCall::Put(vec![put_path], vec![ast])).await?;
+        }
+        CliCommand::PutTree {
+            put_path,
+            local_path,
+        } => {
             info!("Reading local tree from path {}", local_path);
             let file = caniput::ast::file_of_path(std::path::Path::new(&local_path))?;
             let ast = Value::File(Box::new(file));
-            service_call(&cc, &ServiceCall::Put(vec!(put_path), vec!(ast))).await?;
-        },
+            service_call(&cc, &ServiceCall::Put(vec![put_path], vec![ast])).await?;
+        }
     };
     Ok(())
 }

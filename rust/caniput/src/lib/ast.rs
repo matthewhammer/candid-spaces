@@ -1,13 +1,13 @@
 pub use candid::parser::value::IDLValue as ParsedValue;
 
-use candid::parser::value::IDLField as ParsedField;
 use candid::parser::value::IDLArgs as ParsedArgs;
+use candid::parser::value::IDLField as ParsedField;
 use candid::types::Label as ParsedLabel;
 
-use candid::{Nat, Int};
 use candid::{CandidType, Deserialize};
+use candid::{Int, Nat};
 
-use log::{info, debug};
+use log::{debug, info};
 
 use crate::error::*;
 
@@ -90,17 +90,17 @@ impl From<&ParsedLabel> for Label {
 
 impl From<&ParsedArgs> for Args {
     fn from(a: &ParsedArgs) -> Args {
-        let mut v2 = vec!();
+        let mut v2 = vec![];
         for v in a.args.iter() {
             v2.push(Value::from(v))
-        };
-        Args{ args: v2 }
+        }
+        Args { args: v2 }
     }
 }
 
 impl From<&ParsedField> for Field {
     fn from(f: &ParsedField) -> Field {
-        Field{
+        Field {
             id: Label::from(&f.id),
             val: Value::from(&f.val),
         }
@@ -117,18 +117,20 @@ impl From<&ParsedValue> for Value {
             ParsedValue::Float64(f) => Value::Float64(*f),
             ParsedValue::Opt(v) => Value::Opt(Box::new(Value::from(&**v))),
             ParsedValue::Vec(v1) => {
-                let mut v2 = vec!();
-                for v in v1.iter() { v2.push(Value::from(v)) };
+                let mut v2 = vec![];
+                for v in v1.iter() {
+                    v2.push(Value::from(v))
+                }
                 Value::Vec(v2)
-            },
-            ParsedValue::Variant(vv) => {
-                Value::Variant(Box::new(Field::from(&*vv.0)))
-            },
+            }
+            ParsedValue::Variant(vv) => Value::Variant(Box::new(Field::from(&*vv.0))),
             ParsedValue::Record(fs1) => {
-                let mut fs2 = vec!();
-                for f in fs1.iter() { fs2.push(Field::from(f)) };
+                let mut fs2 = vec![];
+                for f in fs1.iter() {
+                    fs2.push(Field::from(f))
+                }
                 Value::Record(fs2)
-            },
+            }
             ParsedValue::Principal(p) => Value::Principal(p.clone()),
             ParsedValue::Service(p) => Value::Service(p.clone()),
             ParsedValue::Func(p, s) => Value::Func(p.clone(), s.clone()),
@@ -153,22 +155,22 @@ impl From<&ParsedValue> for Value {
 pub fn file_of_path(path: &std::path::Path) -> OurResult<File> {
     info!("Reading path {:?}", path);
     if path.is_dir() {
-        let mut name_files = vec!();
+        let mut name_files = vec![];
         for entry in std::fs::read_dir(path)? {
             let entry = entry?;
             let name = entry.file_name().to_str().unwrap().to_string();
             let file = file_of_path(&entry.path())?;
-            name_files.push(NameFile{name, file});
+            name_files.push(NameFile { name, file });
         }
         Ok(File::Directory(name_files))
     } else {
         let s = std::fs::read_to_string(path)?;
-        let pv : Result<ParsedValue, _> = s.parse();
+        let pv: Result<ParsedValue, _> = s.parse();
         if let Ok(v) = pv {
             debug!("Parsed value {}", v);
             Ok(File::Value(Value::from(&v)))
         } else {
-            let pa : Result<ParsedArgs, _> = s.parse();
+            let pa: Result<ParsedArgs, _> = s.parse();
             if let Ok(a) = pa {
                 debug!("Parsed args {}", a);
                 Ok(File::Args(Args::from(&a)))
