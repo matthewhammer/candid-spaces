@@ -71,6 +71,11 @@ pub enum CliCommand {
         put_path: String,
         candid_text: String,
     },
+    #[structopt(name = "tree", about = "put (local file/directory) tree there, expressed here as a path.")]
+    PutTree {
+        put_path: String,
+        local_path: String,
+    },
 }
 
 /// Connection context: IC agent object, for server calls, and configuration info.
@@ -218,6 +223,11 @@ async fn main() -> OurResult<()> {
             candid_text,
         } => {
             let ast = Value::Text(candid_text.clone());
+            service_call(&cc, &ServiceCall::Put(vec!(put_path), vec!(ast))).await?;
+        },
+        CliCommand::PutTree { put_path, local_path } => {
+            let file = caniput::ast::file_of_path(std::path::Path::new(&local_path))?;
+            let ast = Value::File(Box::new(file));
             service_call(&cc, &ServiceCall::Put(vec!(put_path), vec!(ast))).await?;
         },
     };

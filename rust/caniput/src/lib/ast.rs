@@ -7,6 +7,23 @@ use candid::types::Label as ParsedLabel;
 use candid::{Nat, Int};
 use candid::{CandidType, Deserialize};
 
+use crate::error::*;
+
+#[derive(PartialEq, Clone, CandidType, Deserialize)]
+pub struct NameFile {
+    name: String,
+    file: File,
+}
+
+#[derive(PartialEq, Clone, CandidType, Deserialize)]
+pub enum File {
+    Directory(Vec<NameFile>),
+    Text(String),
+    Binary(Vec<u8>),
+    Value(Value),
+    Args(Vec<Value>),
+}
+
 // From
 // https://github.com/dfinity/candid/blob/bb84807217dad6e69c78de0403030e232efaa43e/rust/candid/src/parser/value.rs#L13
 #[derive(PartialEq, Clone, CandidType, Deserialize)]
@@ -37,6 +54,8 @@ pub enum Value {
     Int64(i64),
     Float32(f32),
     Reserved,
+    /// Extension: Inject local filesystem structure, mixed with candid value structure.
+    File(Box<File>),
 }
 
 #[derive(PartialEq, Debug, Clone, CandidType, Deserialize)]
@@ -125,5 +144,22 @@ impl From<&ParsedValue> for Value {
             ParsedValue::Float32(f) => Value::Float32(f.clone()),
             ParsedValue::Reserved => Value::Reserved,
         }
+    }
+}
+
+/// Read filesystem starting at `path`, and construct a `File`.
+pub fn file_of_path(path: &std::path::Path) -> OurResult<File> {
+    if path.is_dir() {
+        let mut name_files = vec!();
+        for entry in std::fs::read_dir(path)? {
+            let entry = entry?;
+            let name = entry.file_name().to_str()?.to_string();
+            let file = file_of_path(&entry.path())?;
+            name_files.push(NameFile{name, file});
+        }
+        Ok(File::Directory(name_files))
+    } else {
+        let s = std::fs::read_to_string(path)?;
+        Ok(File::Text(s))
     }
 }

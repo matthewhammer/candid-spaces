@@ -14,7 +14,9 @@ pub enum OurError {
     RingKeyRejected(ring::error::KeyRejected),
     RingUnspecified(ring::error::Unspecified),
     FromHexError(hex::FromHexError),
+    NoneError(std::option::NoneError)
 }
+
 impl std::convert::From<hex::FromHexError> for OurError {
     fn from(fhe: hex::FromHexError) -> Self {
         OurError::FromHexError(fhe)
@@ -63,5 +65,11 @@ impl std::convert::From<ring::error::KeyRejected> for OurError {
 impl std::convert::From<ring::error::Unspecified> for OurError {
     fn from(r: ring::error::Unspecified) -> Self {
         OurError::RingUnspecified(r)
+    }
+}
+
+impl std::convert::From<std::option::NoneError> for OurError {
+    fn from(e: std::option::NoneError) -> Self {
+        OurError::NoneError(e)
     }
 }
