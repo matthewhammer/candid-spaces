@@ -86,7 +86,10 @@ public module Candid {
       #Int32 : Int32;
       #Int64 : Int64;
       #Float32 : Float;
-      #Reserved
+      #Reserved;
+
+      /// Extension: Inject local filesystem structure, mixed with candid value structure.
+      #File : File;
     };
     public type Label = {
       #Id : Nat32;
@@ -95,7 +98,28 @@ public module Candid {
     };
     public type Field = {
       id : Label;
-      val : Value
+      val : Value;
+    };
+    public type Args = {
+      args : [ Value ];
+    };
+    /// Local filesystem structure, with optional candid value structure inside.
+    public type File = {
+      /// Ordinary directory of (named) files.
+      #Directory : [ NamedFile ];
+      /// Candid-encoded value, in a file.
+      #Value : Value;
+      /// Candid-encoded arguments, in a file.
+      #Args : Args;
+      /// Ordinary text file
+      #Text : Text;
+      /// Ordinary binary file
+      #Binary : [ Nat8 ];
+    };
+
+    public type NamedFile = {
+      name : Text;
+      file : File;
     };
   }
 };

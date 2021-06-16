@@ -15,6 +15,7 @@ pub enum OurError {
     RingUnspecified(ring::error::Unspecified),
     FromHexError(hex::FromHexError),
 }
+
 impl std::convert::From<hex::FromHexError> for OurError {
     fn from(fhe: hex::FromHexError) -> Self {
         OurError::FromHexError(fhe)
