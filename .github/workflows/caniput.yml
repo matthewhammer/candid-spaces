@@ -15,17 +15,17 @@ jobs:
             artifact_name: caniput
             asset_name: caniput-macos
     steps:
-    - name: Install nightly toolchain
+    - name: Install stable toolchain
       uses: actions-rs/toolchain@v1
       with:
         profile: minimal
-        toolchain: nightly
+        toolchain: stable
         override: true
     - uses: actions/checkout@v2
     - name: install_dependencies
       run: |
         brew install rustup
-        rustup-init -y --default-toolchain nightly
+        rustup-init -y --default-toolchain stable
     - name: Build
       run: cargo build --release --locked
 
@@ -39,11 +39,11 @@ jobs:
             artifact_name: caniput
             asset_name: caniput-linux64
     steps:
-    - name: Install nightly toolchain
+    - name: Install stable toolchain
       uses: actions-rs/toolchain@v1
       with:
         profile: minimal
-        toolchain: nightly
+        toolchain: stable
         override: true
     - uses: actions/checkout@v2
     - name: Build

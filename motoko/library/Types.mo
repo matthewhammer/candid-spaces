@@ -98,9 +98,11 @@ public module Candid {
     };
     public type Field = {
       id : Label;
-      val : Value
+      val : Value;
     };
-
+    public type Args = {
+      args : [ Value ];
+    };
     /// Local filesystem structure, with optional candid value structure inside.
     public type File = {
       /// Ordinary directory of (named) files.
@@ -108,7 +110,7 @@ public module Candid {
       /// Candid-encoded value, in a file.
       #Value : Value;
       /// Candid-encoded arguments, in a file.
-      #Args : [ Value ];
+      #Args : Args;
       /// Ordinary text file
       #Text : Text;
       /// Ordinary binary file

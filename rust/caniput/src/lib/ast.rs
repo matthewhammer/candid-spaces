@@ -21,7 +21,7 @@ pub enum File {
     Text(String),
     Binary(Vec<u8>),
     Value(Value),
-    Args(Vec<Value>),
+    Args(Args),
 }
 
 // From
@@ -153,13 +153,23 @@ pub fn file_of_path(path: &std::path::Path) -> OurResult<File> {
         let mut name_files = vec!();
         for entry in std::fs::read_dir(path)? {
             let entry = entry?;
-            let name = entry.file_name().to_str()?.to_string();
+            let name = entry.file_name().to_str().unwrap().to_string();
             let file = file_of_path(&entry.path())?;
             name_files.push(NameFile{name, file});
         }
         Ok(File::Directory(name_files))
     } else {
         let s = std::fs::read_to_string(path)?;
-        Ok(File::Text(s))
+        let pv : Result<ParsedValue, _> = s.parse();
+        if let Ok(v) = pv {
+            Ok(File::Value(Value::from(&v)))
+        } else {
+            let pa : Result<ParsedArgs, _> = s.parse();
+            if let Ok(a) = pa {
+                Ok(File::Args(Args::from(&a)))
+            } else {
+                Ok(File::Text(s))
+            }
+        }
     }
 }
