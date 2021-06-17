@@ -172,6 +172,7 @@ shared ({caller = initPrincipal}) actor class CandidSpaces () {
       };
       space.puts.add(
         {
+          caller = msg.caller;
           id = putId!;
           path = path_;
           time = timeNow_();
@@ -182,6 +183,24 @@ shared ({caller = initPrincipal}) actor class CandidSpaces () {
     }
   };
 
+
+  /// Put candid data into the space identified by the path.
+  public shared(msg) func get(putId : Types.PutId) : async ?Types.View.PutValues {
+    do ? {
+      let event = Sequence.get(eventLog, putId)!;
+      switch (event.kind) {
+        case (#put(put)) {
+               {
+                 caller = put.caller;
+                 path = put.path;
+                 time = event.time;
+                 user = put.user;
+                 values = put.values;
+               } };
+        case _ { return null }
+      }
+    }
+  };
 
   /// A view is an immutable representation of a gathering of paths' data.
   ///
@@ -269,6 +288,7 @@ shared ({caller = initPrincipal}) actor class CandidSpaces () {
                 time = p.time ;
                 user = p.user ;
                 values = p.values ;
+                caller = p.caller ;
               })
       };
       { pos = 0;
@@ -309,6 +329,7 @@ shared ({caller = initPrincipal}) actor class CandidSpaces () {
       let s = v.puts.slice(pos_, size_);
       for (p in s.vals()) {
         b.add({ path = p.path ;
+                caller = p.caller ;
                 time = p.time ;
                 user = p.user ;
                 values = p.values ;

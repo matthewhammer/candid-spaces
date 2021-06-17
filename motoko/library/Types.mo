@@ -195,6 +195,7 @@ public module View {
   /// It associates a time, user and path with a candid data sequence.
   /// A put value is an atomic "raw data" entry of a space, as viewed by a View.
   public type PutValues = {
+    caller : Principal;
     time : Timestamp;
     user : UserId;
     path : Space.Path.Path;

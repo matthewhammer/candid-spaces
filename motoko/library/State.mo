@@ -117,6 +117,7 @@ module {
       public type PutValue = {
         id : Nat;
         time : Int;
+        caller : Principal;
         user : Types.UserId;
         path : Path;
         values : [ Types.Candid.Value.Value ];
