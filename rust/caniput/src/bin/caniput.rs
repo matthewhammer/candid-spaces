@@ -180,13 +180,16 @@ async fn service_call(ctx: &ConnectCtx, call: &ServiceCall) -> OurResult<()> {
             blob_res.len(),
             elapsed
         );
-        let result_flag: (Option<()>,) = candid::decode_args(&blob_res)?;
+        let result_flag: (Option<candid::Nat>,) = candid::decode_args(&blob_res)?;
         match result_flag {
             (None,) => error!("Failure to put."),
-            (Some(()),) => info!(
-                "Successful put: {} arg bytes; {:?} elapsed; completed.",
-                arg_bytes_len, elapsed
-            ),
+            (Some(put_id),) => {
+                info!(
+                    "Successful: putId={}; {} arg bytes; {:?} elapsed; completed.",
+                    put_id, arg_bytes_len, elapsed
+                );
+                println!("{}", put_id);
+            }
         };
         Ok(())
     } else {
