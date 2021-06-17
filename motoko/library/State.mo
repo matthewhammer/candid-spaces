@@ -133,7 +133,6 @@ module {
 
     /// event log.
     eventLog : Event.Log;
-    var eventCount : Nat;
 
     /// all profiles.
     profiles : Map<Types.UserId, Profile>;
@@ -159,7 +158,6 @@ module {
       access = Access.Access({ admin = init.admin });
       profiles = TrieMap.TrieMap<Types.UserId, Profile>(Text.equal, Text.hash);
       eventLog = SeqObj.Seq<Event.Event>(Event.equal, null);
-      var eventCount = 0;
       spaces = TrieMap.TrieMap<Path, Space.Space>(Path.equal, Path.hash);
       views = TrieMap.TrieMap<Types.ViewId, View.View>(Text.equal, Text.hash);
       var viewCount = 0;
