@@ -5,6 +5,7 @@ public type Timestamp = Int; // See mo:base/Time and Time.now()
 
 public type UserId = Text; // chosen by createUser
 public type ViewId = Text; // chosen by createView
+public type PutId = Nat; // chosen by put
 
 /// Role for a caller into the service API.
 /// Common case is #user.
@@ -194,6 +195,7 @@ public module View {
   /// It associates a time, user and path with a candid data sequence.
   /// A put value is an atomic "raw data" entry of a space, as viewed by a View.
   public type PutValues = {
+    caller : Principal;
     time : Timestamp;
     user : UserId;
     path : Space.Path.Path;

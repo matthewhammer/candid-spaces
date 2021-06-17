@@ -28,8 +28,7 @@ shared ({caller = initPrincipal}) actor class CandidSpaces () {
   var state = State.empty({ admin = initPrincipal });
 
   /// Stable memory-based event log
-  stable var eventLog : EventLog = Sequence.empty();
-  stable var eventCount : Nat = 0;
+  stable var eventLog_20210616_2042 : EventLog = Sequence.empty();
 
   /// Sequence for stable memory-based event log
   public type Sequence<X> = Sequence.Sequence<X>;
@@ -54,6 +53,7 @@ shared ({caller = initPrincipal}) actor class CandidSpaces () {
 
   /// log the given event kind, with a unique ID and current time
   func logEvent(ek : State.Event.EventKind) {
+    let eventCount = Sequence.size(eventLog_20210616_2042);
     let e = {
       id = eventCount ;
       time = timeNow_() ;
@@ -61,12 +61,17 @@ shared ({caller = initPrincipal}) actor class CandidSpaces () {
     };
 
     /// Stable memory log (full history).
-    eventLog := append<Event>(eventLog, Sequence.make(e));
-    eventCount += 1;
+    eventLog_20210616_2042 :=
+      append<Event>(eventLog_20210616_2042, Sequence.make(e));
 
     /// Flexible memory log (history since last upgrade).
     state.eventLog.add(e);
-    state.eventCount += 1;
+  };
+
+  /// Variation where event kind requires knowing the ID of the event.
+  func logEvent_(ek_ : Nat -> State.Event.EventKind) {
+    let eventCount = Sequence.size(eventLog_20210616_2042);
+    logEvent(ek_(eventCount))
   };
 
   // responsible for adding metadata from the user to the state.
@@ -130,7 +135,7 @@ shared ({caller = initPrincipal}) actor class CandidSpaces () {
   };
 
   /// Put candid data into the space identified by the path.
-  public shared(msg) func put(user_ : UserId, path_ : SpacePath, values_ : [ CandidValue ]) : async ?() {
+  public shared(msg) func put(user_ : UserId, path_ : SpacePath, values_ : [ CandidValue ]) : async ?Types.PutId {
     do ? {
       // to do --
       // access control for spaces,
@@ -139,7 +144,17 @@ shared ({caller = initPrincipal}) actor class CandidSpaces () {
       //
       //accessCheck(msg.caaller, #update, #user user_)!;
       //accessCheck(msg.calleer, #update, #space path_)!;
-      logEvent(#put({caller=msg.caller; user=user_; path=path_; values=values_}));
+      var putId : ?Nat = null;
+      logEvent_(
+        func (id_ : Nat) : State.Event.EventKind {
+          putId := ?id_;
+          #put({ id = id_;
+                 caller = msg.caller;
+                 user = user_;
+                 path = path_;
+                 values = values_})
+        }
+      );
       let space = switch (state.spaces.get(path_)) {
         case null {
                // space does not exist; create it now.
@@ -157,15 +172,35 @@ shared ({caller = initPrincipal}) actor class CandidSpaces () {
       };
       space.puts.add(
         {
-          // invariant -- to do -- common time between event log and space data.
+          caller = msg.caller;
+          id = putId!;
           path = path_;
-          time = timeNow_(); // to do -- use / assert same time as logEvent above
+          time = timeNow_();
           user = user_;
           values = values_
         });
+      putId!
     }
   };
 
+
+  /// Put candid data into the space identified by the path.
+  public query(msg) func get(putId : Types.PutId) : async ?Types.View.PutValues {
+    do ? {
+      let event = Sequence.get(eventLog_20210616_2042, putId)!;
+      switch (event.kind) {
+        case (#put(put)) {
+               {
+                 caller = put.caller;
+                 path = put.path;
+                 time = event.time;
+                 user = put.user;
+                 values = put.values;
+               } };
+        case _ { return null }
+      }
+    }
+  };
 
   /// A view is an immutable representation of a gathering of paths' data.
   ///
@@ -253,6 +288,7 @@ shared ({caller = initPrincipal}) actor class CandidSpaces () {
                 time = p.time ;
                 user = p.user ;
                 values = p.values ;
+                caller = p.caller ;
               })
       };
       { pos = 0;
@@ -269,7 +305,7 @@ shared ({caller = initPrincipal}) actor class CandidSpaces () {
     // 20210614-1712 to do -- access checks that filter out or redact the log.
     do ? {
       let tail = Buffer.Buffer<State.Event.Event>(0);
-      let iter = Sequence.iter(eventLog, #bwd);
+      let iter = Sequence.iter(eventLog_20210616_2042, #bwd);
       var count = 0;
       while (tail.size() < 10) {
         switch (iter.next()) {
@@ -293,6 +329,7 @@ shared ({caller = initPrincipal}) actor class CandidSpaces () {
       let s = v.puts.slice(pos_, size_);
       for (p in s.vals()) {
         b.add({ path = p.path ;
+                caller = p.caller ;
                 time = p.time ;
                 user = p.user ;
                 values = p.values ;
