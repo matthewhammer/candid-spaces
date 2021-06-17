@@ -51,13 +51,21 @@ public module Space {
     public type Path = [Text];
   };
 
-  public type Put = (
+  public type Put = shared (
     user : UserId,
     path : Path.Path,
-    values : [ Candid.Value.Value ] ) -> async ?Nat;
+    values : [ Candid.Value.Value ] ) -> async ?PutId;
 
-  public type Get = (
+  public type Get = shared (putId : PutId) -> async ?View.PutValues;
 
+};
+
+public type CandidSpacesActor = actor {
+  put : (
+    user : UserId,
+    path : Space.Path.Path,
+    values : [ Candid.Value.Value ] ) -> async ?PutId;
+  get : (putId : PutId) -> async ?View.PutValues;
 };
 
 public module Candid {
