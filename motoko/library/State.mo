@@ -45,6 +45,7 @@ module {
       ttl : ?Nat;
     };
     public type Put = {
+      id : Nat;
       caller : Principal;
       user : Types.UserId;
       path : Path;
@@ -114,6 +115,7 @@ module {
     /// The data associated of a single put operation.
     public module PutValue {
       public type PutValue = {
+        id : Nat;
         time : Int;
         user : Types.UserId;
         path : Path;

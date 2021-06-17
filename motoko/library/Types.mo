@@ -5,6 +5,7 @@ public type Timestamp = Int; // See mo:base/Time and Time.now()
 
 public type UserId = Text; // chosen by createUser
 public type ViewId = Text; // chosen by createView
+public type PutId = Nat; // chosen by put
 
 /// Role for a caller into the service API.
 /// Common case is #user.

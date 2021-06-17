@@ -69,6 +69,11 @@ shared ({caller = initPrincipal}) actor class CandidSpaces () {
     state.eventCount += 1;
   };
 
+  /// Variation where event kind requires knowing the ID of the event.
+  func logEvent_(ek_ : Nat -> State.Event.EventKind) {
+    logEvent(ek_(eventCount))
+  };
+
   // responsible for adding metadata from the user to the state.
   // a null principal means that the username has no valid callers (yet), and the admin
   // must relate one or more principals to it.
@@ -130,7 +135,7 @@ shared ({caller = initPrincipal}) actor class CandidSpaces () {
   };
 
   /// Put candid data into the space identified by the path.
-  public shared(msg) func put(user_ : UserId, path_ : SpacePath, values_ : [ CandidValue ]) : async ?() {
+  public shared(msg) func put(user_ : UserId, path_ : SpacePath, values_ : [ CandidValue ]) : async ?Types.PutId {
     do ? {
       // to do --
       // access control for spaces,
@@ -139,7 +144,17 @@ shared ({caller = initPrincipal}) actor class CandidSpaces () {
       //
       //accessCheck(msg.caaller, #update, #user user_)!;
       //accessCheck(msg.calleer, #update, #space path_)!;
-      logEvent(#put({caller=msg.caller; user=user_; path=path_; values=values_}));
+      var putId : ?Nat = null;
+      logEvent_(
+        func (id_ : Nat) : State.Event.EventKind {
+          putId := ?id_;
+          #put({ id = id_;
+                 caller = msg.caller;
+                 user = user_;
+                 path = path_;
+                 values = values_})
+        }
+      );
       let space = switch (state.spaces.get(path_)) {
         case null {
                // space does not exist; create it now.
@@ -157,12 +172,13 @@ shared ({caller = initPrincipal}) actor class CandidSpaces () {
       };
       space.puts.add(
         {
-          // invariant -- to do -- common time between event log and space data.
+          id = putId!;
           path = path_;
-          time = timeNow_(); // to do -- use / assert same time as logEvent above
+          time = timeNow_();
           user = user_;
           values = values_
         });
+      putId!
     }
   };
 
