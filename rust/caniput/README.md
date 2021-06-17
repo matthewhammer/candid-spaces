@@ -21,7 +21,7 @@ Subcommand `value`:
 
 Puts the value `vec {1; "two"}` into space `here`.
 
-See type `Value` in [`CandidSpaces.did`](https://github.com/matthewhammer/candid-spaces/tree/CandidSpaces.did) for details.
+See type `Value` in [`CandidSpaces.did`](https://github.com/matthewhammer/candid-spaces/blob/main/CandidSpaces.did) for details.
 
 ### Put trees of files
 
@@ -37,7 +37,7 @@ Puts an example file tree, from [local path `test/service/putTree`](https://gith
  - Files that do not parse as candid; treated as text.
  - Directories of other files.
 
-See type `File` in [`CandidSpaces.did`](https://github.com/matthewhammer/candid-spaces/tree/CandidSpaces.did) for details.
+See type `File` in [`CandidSpaces.did`](https://github.com/matthewhammer/candid-spaces/blob/main/CandidSpaces.did) for details.
 
 
 ## Status
