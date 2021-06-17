@@ -8,6 +8,14 @@
 
 ## How?
 
+### Deploy with `dfx deploy`
+
+`dfx deploy --network=ic CandidSpaces`
+
+In the examples below, the deployed canister ID is [`fzcsx-6yaaa-aaaae-aaama-cai`](https://ic.rocks/principal/fzcsx-6yaaa-aaaae-aaama-cai).
+
+You can use this canister ID to play with `caniput`, and optionally, may deploy your own, for private use.
+
 ### Put candid values into spaces via `caniput`
 
 #### Text (strings)
