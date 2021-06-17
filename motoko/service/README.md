@@ -1,5 +1,7 @@
 # Services on the IC
 
+(Links below use [ic.rocks](https://ic.rocks).)
+
 ## [CandidSpaces](https://ic.rocks/principal/fzcsx-6yaaa-aaaae-aaama-cai)
 
 A general-purpose candid data lake for canisters' data on the IC.
