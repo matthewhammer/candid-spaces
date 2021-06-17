@@ -2,34 +2,42 @@
 
 Candid Spaces in-*put*ting tool, for generic candid data.
 
+
 ## Examples
 
-### Local replica (default)
+### Put text
 
-`caniput text here 'variant { Coffee = record { quantity = (1 : nat) ; how = variant { Black } } }'`
+Subcommand `text`:
 
-- Parses the candid `text` value `variant { Coffee = ... }`
-- Puts the parsed AST into path `"here"`, on the default CandidSpaces canister.
+`caniput -r https://ic0.app -c fzcsx-6yaaa-aaaae-aaama-cai text here "hello world"`
 
-For more usage info, try
+Puts the `text` `"hello world"` into the space at path `here`.
 
-`caniput -h`
+### Put candid values
 
-To learn about
+Subcommand `value`:
 
- - Specifying the transport layer (replica URL or network name).
- - Specifying the canister ID.
+`caniput -r https://ic0.app -c fzcsx-6yaaa-aaaae-aaama-cai value here "vec {1; \"two\"}"`
 
+Puts the value `vec {1; "two"}` into space `here`.
 
-### CandidSpaces on the IC
+See type `Value` in [`CandidSpaces.did`](https://github.com/matthewhammer/candid-spaces/blob/main/CandidSpaces.did) for details.
 
-To access the IC with `caniput`, specify `https://ic0.app` as the replica URL with `-r`, as follows:
+### Put trees of files
 
-`caniput -r https://ic0.app -c fzcsx-6yaaa-aaaae-aaama-cai text here 1`
+Subcommand `tree`:
 
-Specify the CandidSpaces canister with `-c` (example uses `fzcsx-6yaaa-aaaae-aaama-cai`).
+`caniput -r https://ic0.app -c fzcsx-6yaaa-aaaae-aaama-cai tree here test/service/putTree`
 
-The example puts the value `1` into space `here`, parsed as a `text` CLI argument.
+Puts an example file tree, from [local path `test/service/putTree`](https://github.com/matthewhammer/candid-spaces/tree/main/test/service/putTree) to remote path `here`.
+
+`caniput tree` distinguishes several cases:
+ - Files that parse as candid arguments.
+ - Files that parse as candid values.
+ - Files that do not parse as candid; treated as text.
+ - Directories of other files.
+
+See type `File` in [`CandidSpaces.did`](https://github.com/matthewhammer/candid-spaces/blob/main/CandidSpaces.did) for details.
 
 
 ## Status
