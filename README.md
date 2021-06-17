@@ -18,7 +18,9 @@ You can use this canister ID to play with `caniput`, and optionally, may deploy 
 
 ### Put candid values into spaces via `caniput`
 
-#### Text (strings)
+See [`caniput` subdirectory](https://github.com/matthewhammer/candid-spaces/tree/main/rust/caniput) for details.
+
+#### Put text
 
 Subcommand `text`:
 
@@ -26,11 +28,7 @@ Subcommand `text`:
 
 Puts the `text` `"hello world"` into the space at path `here`.
 
-The option `-r` specifies the URL of the IC, or the local replica (default).
-
-The option `-c` specifies the CandidSpaces canister ID.
-
-#### Candid values
+#### Put candid values
 
 Subcommand `value`:
 
@@ -38,7 +36,9 @@ Subcommand `value`:
 
 Puts the value `vec {1; "two"}` into space `here`.
 
-#### Trees of files
+See type `Value` in [`CandidSpaces.did`](https://github.com/matthewhammer/candid-spaces/tree/CandidSpaces.did) for details.
+
+#### Put trees of files
 
 Subcommand `tree`:
 
@@ -46,8 +46,10 @@ Subcommand `tree`:
 
 Puts an example file tree, from [local path `test/service/putTree`](https://github.com/matthewhammer/candid-spaces/tree/main/test/service/putTree) to remote path `here`.
 
-`caniput` distinguishes several cases:
+`caniput tree` distinguishes several cases:
  - Files that parse as candid arguments.
  - Files that parse as candid values.
  - Files that do not parse as candid; treated as text.
  - Directories of other files.
+
+See type `File` in [`CandidSpaces.did`](https://github.com/matthewhammer/candid-spaces/tree/CandidSpaces.did) for details.
