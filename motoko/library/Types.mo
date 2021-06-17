@@ -50,7 +50,12 @@ public module Space {
     public type Path = [Text];
   };
 
-  public type Put = (user : UserId, path : Path.Path, value : Candid.Value.Value) -> ?();
+  public type Put = (
+    user : UserId,
+    path : Path.Path,
+    values : [ Candid.Value.Value ] ) -> async ?Nat;
+
+  public type Get = (
 
 };
 

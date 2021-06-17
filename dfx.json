@@ -2,6 +2,12 @@
   "canisters": {
     "CandidSpaces": {
       "main": "motoko/service/CandidSpaces.mo"
+    },
+    "DemoDoer": {
+      "main": "motoko/service/DemoDoer.mo",
+      "dependencies": [
+        "CandidSpaces"
+      ]
     }
    },
   "defaults": {
