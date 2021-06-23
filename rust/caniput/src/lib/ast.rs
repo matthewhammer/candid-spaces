@@ -151,6 +151,15 @@ impl From<&ParsedValue> for Value {
     }
 }
 
+fn trim_newline(s: &mut String) {
+    if s.ends_with('\n') {
+        s.pop();
+        if s.ends_with('\r') {
+            s.pop();
+        }
+    }
+}
+
 /// Read filesystem starting at `path`, and construct a `File`.
 pub fn file_of_path(path: &std::path::Path) -> OurResult<File> {
     info!("Reading path {:?}", path);
@@ -164,7 +173,8 @@ pub fn file_of_path(path: &std::path::Path) -> OurResult<File> {
         }
         Ok(File::Directory(name_files))
     } else {
-        if let Ok(s) = std::fs::read_to_string(path) {
+        if let Ok(mut s) = std::fs::read_to_string(path) {
+            trim_newline(&mut s);
             // text file
             let pv: Result<ParsedValue, _> = s.parse();
             if let Ok(v) = pv {
@@ -183,11 +193,15 @@ pub fn file_of_path(path: &std::path::Path) -> OurResult<File> {
                             debug!("{:?}: Hex file: Parsed args {}", path, a);
                             Ok(File::Args(Args::from(&a)))
                         } else {
-                            debug!("{:?}: Hex file with uninterpreted content.", path);
-                            Ok(File::Binary(bytes))
+                            if let Ok(v) = pv {
+                                debug!("{:?}: Hex file: Parsed value {}", path, v);
+                                Ok(File::Value(Value::from(&v)))
+                            } else {
+                                debug!("{:?}: Hex file with uninterpreted content.", path);
+                                Ok(File::Binary(bytes))
+                            }
                         }
-                    }
-                    else {
+                    } else {
                         debug!("{:?}: Text file with uninterpreted content.", path);
                         Ok(File::Text(s))
                     }
