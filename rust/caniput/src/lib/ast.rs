@@ -176,8 +176,21 @@ pub fn file_of_path(path: &std::path::Path) -> OurResult<File> {
                     debug!("{:?}: Text file: Parsed args {}", path, a);
                     Ok(File::Args(Args::from(&a)))
                 } else {
-                    debug!("{:?}: Text file with uninterpreted content.", path);
-                    Ok(File::Text(s))
+                    if let Ok(bytes) = hex::decode(&s) {
+                        debug!("{:?}: Hex file ...", path);
+                        let pa: Result<ParsedArgs, _> = ParsedArgs::from_bytes(&bytes);
+                        if let Ok(a) = pa {
+                            debug!("{:?}: Hex file: Parsed args {}", path, a);
+                            Ok(File::Args(Args::from(&a)))
+                        } else {
+                            debug!("{:?}: Hex file with uninterpreted content.", path);
+                            Ok(File::Binary(bytes))
+                        }
+                    }
+                    else {
+                        debug!("{:?}: Text file with uninterpreted content.", path);
+                        Ok(File::Text(s))
+                    }
                 }
             }
         } else {
