@@ -1,9 +1,9 @@
 [package]
 name = "caniput"
 version = "0.1.0"
-authors = ["Matthew A Hammer <pubmah@nym.hush.com>"]
+authors = ["Matthew A Hammer <matthew.hammer@gmail.com>"]
 edition = "2018"
-description = "Candid value-putter/getter."
+description = "Candid AST inputting tool."
 license = "Apache-2.0"
 readme = "README.md"
 

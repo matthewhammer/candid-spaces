@@ -164,18 +164,38 @@ pub fn file_of_path(path: &std::path::Path) -> OurResult<File> {
         }
         Ok(File::Directory(name_files))
     } else {
-        let s = std::fs::read_to_string(path)?;
-        let pv: Result<ParsedValue, _> = s.parse();
-        if let Ok(v) = pv {
-            debug!("Parsed value {}", v);
-            Ok(File::Value(Value::from(&v)))
-        } else {
-            let pa: Result<ParsedArgs, _> = s.parse();
-            if let Ok(a) = pa {
-                debug!("Parsed args {}", a);
-                Ok(File::Args(Args::from(&a)))
+        if let Ok(s) = std::fs::read_to_string(path) {
+            // text file
+            let pv: Result<ParsedValue, _> = s.parse();
+            if let Ok(v) = pv {
+                debug!("{:?}: Text file: Parsed value {}", path, v);
+                Ok(File::Value(Value::from(&v)))
             } else {
-                Ok(File::Text(s))
+                let pa: Result<ParsedArgs, _> = s.parse();
+                if let Ok(a) = pa {
+                    debug!("{:?}: Text file: Parsed args {}", path, a);
+                    Ok(File::Args(Args::from(&a)))
+                } else {
+                    debug!("{:?}: Text file with uninterpreted content.", path);
+                    Ok(File::Text(s))
+                }
+            }
+        } else {
+            // binary file.
+            let bytes = std::fs::read(path)?;
+            let mut de = candid::de::IDLDeserialize::new(&bytes)?;
+            if let Ok(v) = de.get_value::<ParsedValue>() {
+                debug!("{:?}: Binary file: Parsed value {}", path, v);
+                Ok(File::Value(Value::from(&v)))
+            } else {
+                let pa: Result<ParsedArgs, _> = ParsedArgs::from_bytes(&bytes);
+                if let Ok(a) = pa {
+                    debug!("{:?}: Binary file: Parsed args {}", path, a);
+                    Ok(File::Args(Args::from(&a)))
+                } else {
+                    debug!("{:?}: Binary file with uninterpreted content.", path);
+                    Ok(File::Binary(bytes))
+                }
             }
         }
     }
