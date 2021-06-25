@@ -60,20 +60,17 @@ actor {
   public func putTextQuick(t : Text) : () {
     ourState := #Text t;
     logger.putQuick("demoDoer", ["demo", "state"], [ #Text t ]);
-    ?()
   };
 
   // one-way function, calling a one-way function
   public func putBoolQuick(b : Bool) : () {
     ourState := #Bool b;
     logger.putQuick("demoDoer", ["demo", "state"], [ #Bool b ]);
-    ?()
   };
 
   // one-way function, calling a one-way function
   public func putNatQuick(n : Nat) : () {
     ourState := #Nat n;
     logger.putQuick("demoDoer", ["demo", "state"], [ #Nat n ]);
-    ?()
   };
 }
