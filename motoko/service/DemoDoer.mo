@@ -56,19 +56,22 @@ actor {
     await doStateChange(#Nat n)
   };
 
-  public func putTextQuick(t : Text) : async ?() {
+  // one-way function, calling a one-way function
+  public func putTextQuick(t : Text) : () {
     ourState := #Text t;
     logger.putQuick("demoDoer", ["demo", "state"], [ #Text t ]);
     ?()
   };
 
-  public func putBoolQuicker(b : Bool) : async ?() {
+  // one-way function, calling a one-way function
+  public func putBoolQuick(b : Bool) : () {
     ourState := #Bool b;
     logger.putQuick("demoDoer", ["demo", "state"], [ #Bool b ]);
     ?()
   };
 
-  public func putNatQuicker(n : Nat) : async ?() {
+  // one-way function, calling a one-way function
+  public func putNatQuick(n : Nat) : () {
     ourState := #Nat n;
     logger.putQuick("demoDoer", ["demo", "state"], [ #Nat n ]);
     ?()
