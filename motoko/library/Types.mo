@@ -61,11 +61,21 @@ public module Space {
 };
 
 public type CandidSpacesActor = actor {
+  // response PutId uniquely identifies the put operation in a global log.
   put : (
     user : UserId,
     path : Space.Path.Path,
     values : [ Candid.Value.Value ] ) -> async ?PutId;
-  get : (putId : PutId) -> async ?View.PutValues;
+
+  // one-way function (no return value).
+  // (inspect the log later to see where it appears, and how it is identified).
+  putQuick : (
+    user : UserId,
+    path : Space.Path.Path,
+    values : [ Candid.Value.Value ] ) -> ();
+
+  // query function (no mutation).
+  get : (putId : PutId) -> async ?View.PutValues query;
 };
 
 public module Candid {

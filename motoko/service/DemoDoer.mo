@@ -41,7 +41,7 @@ actor {
       ourState := newState;
       // Notice: no await here! --- So, should be quicker than non-Quick version.
       // Trade-off is that the put result is not available until we do await it, and we dont.
-      let _ = logger.put("demoDoer", ["demo", "state"], [ newState ]);
+      logger.putQuick("demoDoer", ["demo", "state"], [ newState ]);
     };
   };
 

@@ -135,7 +135,17 @@ shared ({caller = initPrincipal}) actor class CandidSpaces () {
   };
 
   /// Put candid data into the space identified by the path.
+  public shared(msg) func putQuick(user_ : UserId, path_ : SpacePath, values_ : [ CandidValue ]) {
+    ignore put_(msg.caller, user_, path_, values_);
+  };
+
+  /// Put candid data into the space identified by the path.
   public shared(msg) func put(user_ : UserId, path_ : SpacePath, values_ : [ CandidValue ]) : async ?Types.PutId {
+    put_(msg.caller, user_, path_, values_);
+  };
+
+  /// Put candid data into the space identified by the path.
+  func put_(caller_ : Principal, user_ : UserId, path_ : SpacePath, values_ : [ CandidValue ]) : ?Types.PutId {
     do ? {
       // to do --
       // access control for spaces,
@@ -149,7 +159,7 @@ shared ({caller = initPrincipal}) actor class CandidSpaces () {
         func (id_ : Nat) : State.Event.EventKind {
           putId := ?id_;
           #put({ id = id_;
-                 caller = msg.caller;
+                 caller = caller_;
                  user = user_;
                  path = path_;
                  values = values_})
@@ -159,7 +169,7 @@ shared ({caller = initPrincipal}) actor class CandidSpaces () {
         case null {
                // space does not exist; create it now.
                let space = {
-                 createCaller = msg.caller;
+                 createCaller = caller_;
                  createUser = user_;
                  createTime = timeNow_();
                  path = path_ ;
@@ -172,7 +182,7 @@ shared ({caller = initPrincipal}) actor class CandidSpaces () {
       };
       space.puts.add(
         {
-          caller = msg.caller;
+          caller = caller_;
           id = putId!;
           path = path_;
           time = timeNow_();
