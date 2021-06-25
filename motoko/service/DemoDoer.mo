@@ -9,7 +9,9 @@ actor {
   type Logger = Types.CandidSpacesActor;
 
   let logger : Logger =
-    (actor "rrkah-fqaaa-aaaaa-aaaaq-cai" /*"fzcsx-6yaaa-aaaae-aaama-cai"*/
+    (actor
+     /* "rrkah-fqaaa-aaaaa-aaaaq-cai" */
+        "fzcsx-6yaaa-aaaae-aaama-cai"
        : Logger);
 
   public type PutId = Types.PutId;
