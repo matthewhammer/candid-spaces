@@ -36,15 +36,6 @@ actor {
     };
   };
 
-  func doStateChangeQuick(newState : OurState) : async ?() {
-    do ? {
-      ourState := newState;
-      // Notice: no await here! --- So, should be quicker than non-Quick version.
-      // Trade-off is that the put result is not available until we do await it, and we dont.
-      logger.putQuick("demoDoer", ["demo", "state"], [ newState ]);
-    };
-  };
-
   public query func getState() : async ?{state : OurState; logPuts : [PutId]}
   {
     ?{ state = ourState ;
@@ -64,14 +55,20 @@ actor {
   };
 
   public func putTextQuick(t : Text) : async ?() {
-    await doStateChangeQuick(#Text t)
+    ourState := #Text t;
+    logger.putQuick("demoDoer", ["demo", "state"], [ #Text t ]);
+    ?()
   };
 
   public func putBoolQuicker(b : Bool) : async ?() {
-    await doStateChangeQuick(#Bool b)
+    ourState := #Bool b;
+    logger.putQuick("demoDoer", ["demo", "state"], [ #Bool b ]);
+    ?()
   };
 
   public func putNatQuicker(n : Nat) : async ?() {
-    await doStateChangeQuick(#Nat n)
+    ourState := #Nat n;
+    logger.putQuick("demoDoer", ["demo", "state"], [ #Nat n ]);
+    ?()
   };
 }

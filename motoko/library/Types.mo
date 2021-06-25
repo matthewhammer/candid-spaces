@@ -75,7 +75,7 @@ public type CandidSpacesActor = actor {
     values : [ Candid.Value.Value ] ) -> ();
 
   // query function (no mutation).
-  get : (putId : PutId) -> async ?View.PutValues query;
+  get : query (putId : PutId) -> async ?View.PutValues;
 };
 
 public module Candid {
