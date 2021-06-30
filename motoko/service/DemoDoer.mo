@@ -9,7 +9,9 @@ actor {
   type Logger = Types.CandidSpacesActor;
 
   let logger : Logger =
-    (actor "rrkah-fqaaa-aaaaa-aaaaq-cai" /*"fzcsx-6yaaa-aaaae-aaama-cai"*/
+    (actor
+     /* "rrkah-fqaaa-aaaaa-aaaaq-cai" */
+        "fzcsx-6yaaa-aaaae-aaama-cai"
        : Logger);
 
   public type PutId = Types.PutId;
@@ -36,15 +38,6 @@ actor {
     };
   };
 
-  func doStateChangeQuick(newState : OurState) : async ?() {
-    do ? {
-      ourState := newState;
-      // Notice: no await here! --- So, should be quicker than non-Quick version.
-      // Trade-off is that the put result is not available until we do await it, and we dont.
-      let _ = logger.put("demoDoer", ["demo", "state"], [ newState ]);
-    };
-  };
-
   public query func getState() : async ?{state : OurState; logPuts : [PutId]}
   {
     ?{ state = ourState ;
@@ -63,15 +56,21 @@ actor {
     await doStateChange(#Nat n)
   };
 
-  public func putTextQuick(t : Text) : async ?() {
-    await doStateChangeQuick(#Text t)
+  // one-way function, calling a one-way function
+  public func putTextQuick(t : Text) : () {
+    ourState := #Text t;
+    logger.putQuick("demoDoer", ["demo", "state"], [ #Text t ]);
   };
 
-  public func putBoolQuicker(b : Bool) : async ?() {
-    await doStateChangeQuick(#Bool b)
+  // one-way function, calling a one-way function
+  public func putBoolQuick(b : Bool) : () {
+    ourState := #Bool b;
+    logger.putQuick("demoDoer", ["demo", "state"], [ #Bool b ]);
   };
 
-  public func putNatQuicker(n : Nat) : async ?() {
-    await doStateChangeQuick(#Nat n)
+  // one-way function, calling a one-way function
+  public func putNatQuick(n : Nat) : () {
+    ourState := #Nat n;
+    logger.putQuick("demoDoer", ["demo", "state"], [ #Nat n ]);
   };
 }
